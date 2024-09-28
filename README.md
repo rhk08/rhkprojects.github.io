@@ -1,2 +1,2 @@
 # rhkprojects.github.io
-A portfolio website containing my little side projects.
+A website that will contain what I've done, however, its currently under construction.
