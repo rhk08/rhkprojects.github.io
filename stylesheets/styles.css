@@ -2,7 +2,6 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    background-color: red;
   }
 
 
@@ -16,7 +15,7 @@ animation: pulse 1.5s infinite ease-in-out;
     opacity: 1;
 }
 50% {
-    opacity: 0.5;
+    opacity: 0;
 }
 100% {
     opacity: 1;
