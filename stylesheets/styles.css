@@ -59,7 +59,6 @@ body {
 }
 
 
-
 @keyframes fadeIn {
     to {
         opacity: 1;
@@ -100,4 +99,35 @@ body {
     50% { transform: translateY(-5px) }
     75% { transform: translateY(5px) }
     100% { transform: translateY(0) }
+}
+
+#modeChange {
+    position: fixed;
+    top: 10px; /* Adjust spacing from the top */
+    left: 10px; /* Adjust spacing from the left */
+    z-index: 1000; /* Ensure it stays on top of other elements */
+    padding: 15px 20px;
+    width: 150px;
+    height: 48px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14.5px;
+    text-align: center;
+}
+
+.survival {
+    background-color: #d23838;
+}
+
+.survival:hover {
+    background-color: #a92d2d; /* Darken the div on hover */
+}
+
+.endless {
+    background-color: #2196F3;
+}
+
+.endless:hover {
+    background-color: #1976D2; /* Darken the div on hover */
 }

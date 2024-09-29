@@ -24,6 +24,7 @@ let speedHighScore = 0;
 let score = 0;
 
 let isDead = false;
+let isInvincible = false;
 
 function getRandomPositionAndAngle() {
     const areaWidth = window.innerWidth;
@@ -126,7 +127,7 @@ let turningRate = 0.5;
 let turningRateTowardsPlayer = 1; // Degrees to turn per interval
 const turningThreshold = 30; 
 
-const spawnInterval = 1000; // Spawn new arrows every 5 seconds
+let spawnInterval = 1000; // Spawn new arrows every 5 seconds
 const spawnDistance = 200; //How many px away from another red arrow a div must be to spawn
 
 let spawnLimit = 6;
@@ -263,11 +264,17 @@ function doEnemyMovement() {
     }, 5); // Update interval set to 5ms for smooth movement
 }
 
-
+let spawnIntervalId;
 
 function spawnArrow() {
-    setInterval(() => {
-        if(obstacles.length < spawnLimit){
+    // Clear the previous interval if it exists
+    if (spawnIntervalId) {
+        clearInterval(spawnIntervalId);
+    }
+
+    // Create a new interval with the current spawnInterval value
+    spawnIntervalId = setInterval(() => {
+        if (obstacles.length < spawnLimit) {
             const newArrow = document.createElement('div');
             newArrow.className = 'red_arrow';
 
@@ -289,7 +296,7 @@ function spawnArrow() {
                 }
             });
 
-            //Check distance from player
+            // Check distance from the player
             const playerPosX = parseFloat(arrow.style.left) + arrow.offsetWidth / 2;
             const playerPosY = parseFloat(arrow.style.top) + arrow.offsetHeight / 2;
             let distance = Math.sqrt(Math.pow(playerPosX - randomX, 2) + Math.pow(playerPosY - randomY, 2));
@@ -309,10 +316,14 @@ function spawnArrow() {
 
                 gameArea.appendChild(newArrow); // Add the new arrow to the game area
             }
-        };
+        }
     }, spawnInterval);
 }
 
+function updateSpawnInterval(newInterval) {
+    spawnInterval = newInterval;
+    spawnArrow(); // Restart spawning with the new interval
+}
 
 //How much you want to reduce collision boxes by
 const scaleFactor = 0.2;
@@ -410,11 +421,26 @@ function checkPlayerCollision() {
             smallerRectA.bottom > smallerRectB.top
         ) {
             arrowsDestroyedByPlayer.add(arrowB);
-            playerDied = true; // Set playerDied to true if a collision is detected
+            if(!isInvincible){
+                playerDied = true; // Set playerDied to true if a collision is detected
+            }
         }
     }
 
     // Remove collided arrows and update score
+    if (arrowsDestroyedByPlayer.size > 0 && isInvincible) {
+        triggerShakeAnimation2();
+        enemyDeathSound.currentTime = 0;
+        
+        let calculatedVolume = 0.4 * arrowsDestroyedByPlayer.size;
+
+        // Cap the volume at 0.6
+        if (calculatedVolume > 0.5) {
+            calculatedVolume = 0.5;
+        }
+        enemyDeathSound.volume = calculatedVolume;
+        enemyDeathSound.play();
+    }
     arrowsDestroyedByPlayer.forEach((arrow) => {
         arrow.remove(); // Remove the arrow from the DOM
         score += 1;
@@ -481,6 +507,37 @@ function triggerShakeAnimation2() {
     }, 150); // Match the duration of the shake animation (0.3s)
 }
 
+
+
+function changeMode() {
+    isInvincible = !isInvincible;
+    checkMode();
+}
+
+function checkMode(){
+    const mode = document.getElementById('modeChange');
+    if (isInvincible) {
+        mode.innerText = `Endless Mode`;
+        updateSpawnInterval(500);
+        mode.classList.add('endless'); // Add the 'endless' class
+        mode.classList.remove('survival'); // Remove the 'survival' class
+        
+        if (isDead) {
+            alert('Too late now.');
+            isInvincible = !isInvincible;
+            mode.innerText = `Survival Mode`;
+            updateSpawnInterval(1000);
+            mode.classList.remove('endless'); // Remove the 'endless' class
+            mode.classList.add('survival'); // Add the 'survival' class
+        }
+    } else {
+        mode.innerText = `Survival Mode`;
+        updateSpawnInterval(1000);
+        mode.classList.remove('endless'); // Remove the 'endless' class
+        mode.classList.add('survival'); // Add the 'survival' class
+    }
+}
+
 document.addEventListener('mousedown', (event) => {
     if (event.button === 0) {
         startTurning(-1);
@@ -507,9 +564,15 @@ window.onload = () => {
     startMovement();
     displaySpeed();
     doEnemyMovement();
-    spawnArrow();
-
+    
     updateRandomTargetPosition();
 
-    increaseSpawnLimit();
+    checkMode();
+
+    const delayBeforeSpawn = 1500; // Delay in milliseconds (e.g., 2000ms = 2 seconds)
+
+    setTimeout(() => {
+        spawnArrow();
+        increaseSpawnLimit();
+    }, delayBeforeSpawn);
 };
