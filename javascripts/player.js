@@ -130,7 +130,29 @@ const spawnInterval = 1000; // Spawn new arrows every 5 seconds
 const spawnDistance = 200; //How many px away from another red arrow a div must be to spawn
 
 let spawnLimit = 6;
-const absoluteSpawnLimit = 20;
+let absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
+
+// Function to calculate the absolute spawn limit based on screen size
+function calculateAbsoluteSpawnLimit() {
+    const screenArea = window.innerWidth * window.innerHeight;
+    return Math.floor(screenArea / 50000);  // Adjust the divisor to control spawn density
+}
+
+// Function to gradually increase the spawn limit
+function increaseSpawnLimit() {
+    const incrementInterval = setInterval(() => {
+        if (spawnLimit < absoluteSpawnLimit) {
+            spawnLimit++;
+        } else {
+            spawnLimit--;
+        }
+    }, 5000);  // Increase spawn limit every second
+}
+
+// Recalculate absolute spawn limit on window resize
+window.addEventListener('resize', () => {
+    absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
+});
 
 // Random rotation change in degrees when player is dead
 const minAngleChange = -0.5; 
@@ -412,7 +434,10 @@ function playerDeath() {
     arrow.remove();
     triggerShakeAnimation1();
     isDead = true;
+    
     spawnLimit = 0;
+    absoluteSpawnLimit = 0;
+
     enemyBaseSpeed = 0.6;
     turningRate = 0.6;
     turningRateTowardsPlayer = 0.3;
@@ -470,6 +495,13 @@ gameArea.addEventListener('contextmenu', (event) => {
     event.preventDefault();
 });
 
+window.addEventListener('resize', () => {
+    if(!isDead){
+        absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
+    }
+    // console.log(absoluteSpawnLimit);
+});
+
 window.onload = () => {
     getRandomPositionAndAngle();
     startMovement();
@@ -478,4 +510,6 @@ window.onload = () => {
     spawnArrow();
 
     updateRandomTargetPosition();
+
+    increaseSpawnLimit();
 };
