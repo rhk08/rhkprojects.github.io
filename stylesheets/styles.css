@@ -40,6 +40,8 @@ body {
     border-left: 20px solid white;
     border-bottom: 10px solid transparent;
     mix-blend-mode: difference;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
 }
 
 .red_arrow {
