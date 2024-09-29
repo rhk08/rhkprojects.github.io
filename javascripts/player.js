@@ -518,7 +518,7 @@ function checkMode(){
     const mode = document.getElementById('modeChange');
     if (isInvincible) {
         mode.innerText = `Endless Mode`;
-        updateSpawnInterval(500);
+        updateSpawnInterval(300);
         mode.classList.add('endless'); // Add the 'endless' class
         mode.classList.remove('survival'); // Remove the 'survival' class
         
