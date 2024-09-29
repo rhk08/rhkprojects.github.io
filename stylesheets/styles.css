@@ -12,6 +12,8 @@
     align-items: center;
     height: 100vh;
     width: 100vw;
+    background-color: white;
+    pointer-events: none;
 }
 
 body {
@@ -19,7 +21,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: whitesmoke;
+    background-color: transparent;
 }
 
 #gameArea {
@@ -35,8 +37,65 @@ body {
     width: 0;
     height: 0;
     border-top: 10px solid transparent;
-    border-left: 20px solid whitesmoke;
+    border-left: 20px solid white;
     border-bottom: 10px solid transparent;
     mix-blend-mode: difference;
 }
 
+.red_arrow {
+    position: absolute;
+    transform-origin: 50% 50%;
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-left: 20px solid aqua;
+    border-bottom: 10px solid transparent;
+    transform: rotate(var(--rotation, 0deg));
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+    mix-blend-mode: difference;
+}
+
+
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+.tilt-shaking {
+    animation: tilt-shaking 0.15s ease-in;
+}
+
+.vertical-shaking {
+    animation: vertical-shaking 0.15s ease-in;
+}
+
+.slight-vertical-shaking {
+    animation: slight-vertical-shaking 0.15s ease-in;
+}
+
+@keyframes tilt-shaking {
+    0% { transform: rotate(0deg ); }
+    25% { transform: rotate(5deg); }
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
+}
+
+@keyframes vertical-shaking {
+    0% { transform: translateY(0) }
+    25% { transform: translateY(10px) }
+    50% { transform: translateY(-10px) }
+    75% { transform: translateY(10px) }
+    100% { transform: translateY(0) }
+}
+
+@keyframes slight-vertical-shaking {
+    0% { transform: translateY(0) }
+    25% { transform: translateY(5px) }
+    50% { transform: translateY(-5px) }
+    75% { transform: translateY(5px) }
+    100% { transform: translateY(0) }
+}
