@@ -4,6 +4,8 @@ const gameArea = document.getElementById('gameArea');
 const playerDeathSound = document.getElementById('playerDeathSound');
 const enemyDeathSound = document.getElementById('enemyDeathSound');
 
+const flavourText = document.getElementById('flavourText');
+
 let angle;
 let posX;
 let posY;
@@ -22,9 +24,10 @@ const turnIncreaseRate = 0.004;
 
 let speedHighScore = 0;
 let score = 0;
+let finalScore = 0;
 
 let isDead = false;
-let isInvincible = false;
+let isInvincible = true;
 
 function getRandomPositionAndAngle() {
     const areaWidth = window.innerWidth;
@@ -99,12 +102,11 @@ function displaySpeed() {
 
         if (isDead) {
             clearInterval(interval); // Stop the interval when the player is dead
-            document.getElementById('speedDisplay').innerText = `0.0 km/h`;
             return; // Exit the function
         }
 
         const speedFluctuation = Math.random() * 2 * a - a;
-        const speedFluctuation2 = Math.random() + 3;
+        const speedFluctuation2 = 3;
 
         let displayedSpeed = roundToOneDecimalPlace(40 + speedFluctuation2 * (speed - baseSpeed) + speedFluctuation);
 
@@ -118,6 +120,18 @@ function displaySpeed() {
         interval = setInterval(updateSpeedDisplay, newInterval);
     };
     interval = setInterval(updateSpeedDisplay, 200);
+}
+
+function displayScore() {
+
+}
+
+const scoreDisplay = document.getElementById('scoreDisplay')
+
+function incrementScore() {
+    score += 1;
+    scoreDisplay.innerText = `Score ${score}`
+
 }
 
 //Enemy functions
@@ -379,7 +393,9 @@ function checkCollisions() {
     }
     arrowsToDestroy.forEach((arrow) => {
         arrow.remove(); // Remove the arrow from the DOM
-        score += 1;
+        if(!isDead) {
+            incrementScore();
+        }
     });
 }
 
@@ -443,7 +459,9 @@ function checkPlayerCollision() {
     }
     arrowsDestroyedByPlayer.forEach((arrow) => {
         arrow.remove(); // Remove the arrow from the DOM
-        score += 1;
+        if(!isDead) {
+            incrementScore();
+        }
     });
 
     // Call playerDeath only once if the player has died
@@ -468,14 +486,26 @@ function playerDeath() {
     turningRate = 0.6;
     turningRateTowardsPlayer = 0.3;
 
+    document.getElementById('speedDisplay').innerText = `Max Speed ${speedHighScore} km/h`;
+    finalScore = score;
+    scoreDisplay.innerText = `Final Score ${finalScore}`;
+    document.getElementById('flavourWrapper').innerHTML = `
+        <h4 id="flavourText">You Died.</h4>
+        <h4 style="font-size: 16px;margin-bottom: 2px;">(Refresh to restart)</h4>
+    `;
+
+
     setInterval(() => {
         if (isDead) {
             updateRandomTargetPosition();
         }
     }, 3000);
+
 }
 
-
+function restartGame() {
+    location.reload(); // Simple reload to restart the game, or you can add more logic for resetting game variables
+}
 
 function triggerShakeAnimation0() {
     const messageBox = document.getElementById('message_box0');
@@ -518,23 +548,34 @@ function checkMode(){
     const mode = document.getElementById('modeChange');
     if (isInvincible) {
         mode.innerText = `Endless Mode`;
-        updateSpawnInterval(300);
-        mode.classList.add('endless'); // Add the 'endless' class
-        mode.classList.remove('survival'); // Remove the 'survival' class
-        
-        if (isDead) {
-            alert('Too late now.');
-            isInvincible = !isInvincible;
-            mode.innerText = `Survival Mode`;
-            updateSpawnInterval(1000);
-            mode.classList.remove('endless'); // Remove the 'endless' class
-            mode.classList.add('survival'); // Add the 'survival' class
+        mode.classList.add('endless');
+        mode.classList.remove('survival');
+        if (gameBegin) { 
+            updateSpawnInterval(300);
         }
+        score = 0;
+        scoreDisplay.innerText = `Score 0`;
+
     } else {
         mode.innerText = `Survival Mode`;
-        updateSpawnInterval(1000);
-        mode.classList.remove('endless'); // Remove the 'endless' class
-        mode.classList.add('survival'); // Add the 'survival' class
+        mode.classList.add('survival');
+        mode.classList.remove('endless');
+        if (gameBegin) { 
+            updateSpawnInterval(1000);
+        }
+        score = 0;
+        scoreDisplay.innerText = `Score 0`;
+    }
+    
+    if (isDead && isInvincible) {
+        alert('Too late now.\n\n(Try refreshing the page)');
+        isInvincible = false; // Toggle invincibility off
+        mode.innerText = `Survival Mode`;
+        mode.classList.add('survival');
+        mode.classList.remove('endless');
+        if (gameBegin) { 
+            updateSpawnInterval(1000);
+        }
     }
 }
 
@@ -559,7 +600,12 @@ window.addEventListener('resize', () => {
     // console.log(absoluteSpawnLimit);
 });
 
+let gameBegin = false;
+
 window.onload = () => {
+
+
+
     getRandomPositionAndAngle();
     startMovement();
     displaySpeed();
@@ -569,10 +615,29 @@ window.onload = () => {
 
     checkMode();
 
-    const delayBeforeSpawn = 1500; // Delay in milliseconds (e.g., 2000ms = 2 seconds)
+    const delayBeforeSpawn = 10000; // Delay in milliseconds (e.g., 2000ms = 2 seconds)
 
     setTimeout(() => {
+        gameBegin = true;
         spawnArrow();
         increaseSpawnLimit();
     }, delayBeforeSpawn);
+
+
+    const tipContainer = document.getElementById('tipContainer');
+
+    // Show the tip on page load
+    setTimeout(() => {
+        tipContainer.classList.add('show');
+    }, 500); // Delay of 0.5s to make it smoother
+
+    // Automatically hide the tip after 10 seconds
+    setTimeout(() => {
+        tipContainer.classList.remove('show');
+    }, 10000);
 };
+
+function closeTip() {
+    const tipContainer = document.getElementById('tipContainer');
+    tipContainer.classList.remove('show');
+}
