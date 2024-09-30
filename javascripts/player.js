@@ -140,29 +140,43 @@ const turningThreshold = 30;
 let spawnInterval = 1000; // Spawn new arrows every 5 seconds
 const spawnDistance = 200; //How many px away from another red arrow a div must be to spawn
 
-let spawnLimit = 6;
+const baseSpawnLimit = 3;
+let spawnLimit = baseSpawnLimit;
 let absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
+
+// Initial speed for each arrow
+// Flag to track if speed increase is active
 
 // Function to calculate the absolute spawn limit based on screen size
 function calculateAbsoluteSpawnLimit() {
     const screenArea = window.innerWidth * window.innerHeight;
-    return Math.floor(screenArea / 50000);  // Adjust the divisor to control spawn density
+    return Math.floor(screenArea / 90000);  // Adjust the divisor to control spawn density
 }
 
-// Function to gradually increase the spawn limit
+let spawnLimitReached = false;
+// Function to gradually increase the spawn limit and turn on hard mode
+let spawnLimitIncrementInterval;
 function increaseSpawnLimit() {
-    const incrementInterval = setInterval(() => {
+    spawnLimitIncrementInterval = setInterval(() => {
         if (spawnLimit < absoluteSpawnLimit) {
             spawnLimit++;
         } else {
-            spawnLimit--;
+            if (!spawnLimitReached) {
+                displayTip({
+                    newTip: 'Hard Mode Activated: Good Luck!',
+                    buttonInnerText: 'Thanks.',
+                    buttonColor: '#303030'
+                })
+                spawnLimitReached = true;
+            }
         }
-    }, 5000);  // Increase spawn limit every second
+    }, 10000);  // Increase spawn limit every second
 }
 
 // Recalculate absolute spawn limit on window resize
 window.addEventListener('resize', () => {
     absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
+    console.log(absoluteSpawnLimit)
 });
 
 // Random rotation change in degrees when player is dead
@@ -193,18 +207,15 @@ function doEnemyMovement() {
             let posY = parseFloat(arrow.style.top);
             let angle = parseFloat(arrow.style.transform.replace('rotate(', '').replace('deg)', '')) || Math.random() * 360;
 
+            let speedIncreaseAmount = 0; // Amount by which speed will increase
+            let speedIncreaseDuration = 0; // Duration for speed increase in milliseconds
+            let speedIncreaseStartTime = 0; // Timestamp when the speed boost started
+            let speedIncreaseActive = false; 
+
+            let lastSpeedBoostTime = 0; // Timestamp for the last speed boost activation
+            let cooldownDuration = 5000;
+
             let speed = enemyBaseSpeed; // Speed for each arrow
-
-            // Update position based on angle and speed
-            posX += speed * Math.cos(angle * (Math.PI / 180));
-            posY += speed * Math.sin(angle * (Math.PI / 180));
-
-
-            // Wrap around the screen
-            if (posX < 0) posX = window.innerWidth;
-            if (posX > window.innerWidth) posX = 0;
-            if (posY < 0) posY = window.innerHeight;
-            if (posY > window.innerHeight) posY = 0;
 
             // Avoidance behavior
             let isAvoiding = false; // Flag to check if the arrow is avoiding another arrow
@@ -240,6 +251,7 @@ function doEnemyMovement() {
             // Only turn towards the player if not avoiding
             if (!isAvoiding) {
                 let targetPosX, targetPosY;
+                let speedMultiplier = 1;
             
                 if (isDead) {
                     // Use the pre-generated random target position
@@ -248,6 +260,8 @@ function doEnemyMovement() {
                 } else {
                     targetPosX = playerPosX;
                     targetPosY = playerPosY;
+                    let distance = Math.sqrt(Math.pow(playerPosX - posX, 2) + Math.pow(playerPosY - posY, 2));
+                    speedMultiplier = calculateSpeedBoostMultiplier(distance);
                 }
             
                 const angleToTarget = Math.atan2(targetPosY - posY, targetPosX - posX) * (180 / Math.PI);
@@ -261,7 +275,39 @@ function doEnemyMovement() {
                 } else {
                     angle += (angleDiff > 0 ? turningRateTowardsPlayer : -turningRateTowardsPlayer); // Turn by turning rate
                 }
+
+                if (spawnLimit >= absoluteSpawnLimit) {
+                    const currentTime = Date.now();
+
+                    if (!speedIncreaseActive && (currentTime - lastSpeedBoostTime >= cooldownDuration)) {
+                        // Generate random speed increase and duration
+                        speedIncreaseAmount = Math.random() * (2 - 0) + 0; // Random speed increase between 1 and 5
+                        speedIncreaseDuration = Math.floor(Math.random() * (5000 - 1000)) + 1000; // Random duration between 1s (1000 ms) and 5s (5000 ms)
+                        speedIncreaseActive = true;
+                        speed += speedIncreaseAmount * speedMultiplier; // Increase speed
+                        speedIncreaseStartTime = Date.now(); // Record the time when boost started
+                        lastSpeedBoostTime = currentTime; // Update the last speed boost time
+                    }
+                }
             }
+
+            // Reset speed after duration
+            if (speedIncreaseActive && (Date.now() - speedIncreaseStartTime >= speedIncreaseDuration)) {
+                speedIncreaseAmount = 0; // Reset speed to original after duration
+                speedIncreaseActive = false; // Mark boost as inactive
+            }
+
+            console.log(speed)
+
+            // Update position based on angle and speed
+            posX += speed * Math.cos(angle * (Math.PI / 180));
+            posY += speed * Math.sin(angle * (Math.PI / 180));
+
+            // Wrap around the screen
+            if (posX < 0) posX = window.innerWidth;
+            if (posX > window.innerWidth) posX = 0;
+            if (posY < 0) posY = window.innerHeight;
+            if (posY > window.innerHeight) posY = 0;
 
             // Apply the updated position and angle
             arrow.style.left = `${posX}px`;
@@ -272,6 +318,21 @@ function doEnemyMovement() {
             checkPlayerCollision();
         });
     }, 5); // Update interval set to 5ms for smooth movement
+}
+
+function calculateSpeedBoostMultiplier(distance) {
+    const baseMultiplier = 1; // Base multiplier for minimum distance
+    const maxMultiplier = 3; // Maximum multiplier for farthest distance
+    const maxDistance = 500; // The distance at which the maximum multiplier applies
+
+    // Clamp the distance to avoid negative values
+    const clampedDistance = Math.max(0, distance);
+
+    // Calculate the multiplier based on distance
+    const multiplier = baseMultiplier + (maxMultiplier - baseMultiplier) * (clampedDistance / maxDistance);
+
+    // Ensure the multiplier does not exceed the maximum
+    return Math.min(multiplier, maxMultiplier);
 }
 
 let spawnIntervalId;
@@ -478,6 +539,9 @@ function playerDeath() {
     spawnLimit = 0;
     absoluteSpawnLimit = 0;
 
+    clearInterval(spawnIntervalId);
+    clearInterval(spawnLimitIncrementInterval);
+
     enemyBaseSpeed = 0.6;
     turningRate = 0.6;
     turningRateTowardsPlayer = 0.3;
@@ -572,6 +636,15 @@ function checkMode(){
         }
         score = 0;
         scoreDisplay.innerText = `Score 0`;
+        if(spawnLimitReached){
+            displayTip({
+                newTip: 'Hard Mode De-Activated:',
+                buttonInnerText: '✖',
+                buttonColor: '#303030'
+            })
+            spawnLimitReached = false;
+        }
+        spawnLimit = baseSpawnLimit;
         if(gameBegin){
             displayTip({
                 newTip: 'Endless Mode Activated: You can Relax Now.',
@@ -589,10 +662,17 @@ function checkMode(){
         }
         score = 0;
         scoreDisplay.innerText = `Score 0`;
-
+        spawnLimit = baseSpawnLimit;
         speed = 0;
         speedHighScore = 0;
-        
+        if(spawnLimitReached){
+            displayTip({
+                newTip: 'Hard Mode De-Activated:',
+                buttonInnerText: '✖',
+                buttonColor: '#303030'
+            })
+            spawnLimitReached = false;
+        }
         displayTip({
             newTip: 'Survival Mode Activated: Watch Out!',
             buttonInnerText: 'Got it.',
@@ -619,7 +699,7 @@ window.addEventListener('resize', () => {
     if(!isDead){
         absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
     }
-    // console.log(absoluteSpawnLimit);
+    console.log(absoluteSpawnLimit);
 });
 
 let gameBegin = false;
@@ -640,17 +720,17 @@ window.onload = () => {
     setTimeout(() => {
         displayTip({
             newTip: "Tip: Hold the Left or Right mouse buttons to turn and speed up!",
-            buttonInnerText: 'Got it!',
+            buttonInnerText: 'Begin',
             buttonColor: '#4cb94e',  // Optional: style the button
             onClickFunction: closeTipAndStartGame, // Trigger game start when closed
-            displayTime: 9500 // Tip will still automatically disappear if not closed manually
+            displayTime: 14500 // Tip will still automatically disappear if not closed manually
         });
     
         // Start the game after 10 seconds
         gameStartTimeout = setTimeout(() => {
             startGame();
             showModeChangeButton(); // Start the game if not started already
-        }, 9500); // 10 seconds
+        }, 14500); // 10 seconds
     }, 500); // 1s delay for smooth appearance
 };
 

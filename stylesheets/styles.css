@@ -112,8 +112,8 @@ body {
 
 #modeChange {
     position: fixed;
-    top: 10px; /* Adjust spacing from the top */
-    left: 10px; /* Adjust spacing from the left */
+    top: 15px; /* Adjust spacing from the top */
+    left: 15px; /* Adjust spacing from the left */
     z-index: 1000; /* Ensure it stays on top of other elements */
     padding: 15px 20px;
     width: 150px;
@@ -126,6 +126,7 @@ body {
     opacity: 1;
     pointer-events: auto;
     cursor: pointer;
+    user-select: none;
 }
 
 .survival {
@@ -146,12 +147,13 @@ body {
 
 .tip-container {
     position: fixed;
-    bottom: 20px;
+    bottom: 15px;
     right: 20px;
     z-index: 1000;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    user-select: none;
 }
 
 .tip {
