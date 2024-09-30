@@ -494,7 +494,7 @@ function playerDeath() {
     scoreDisplay.innerText = `Final Score ${finalScore}`;
 
     document.getElementById('flavourWrapper').innerHTML = `
-        <h4 id="flavourText">You Died.</h4>
+        <h4 id="flavourText" style="font-size: 32px;">You Died.</h4>
     `;
 
     if (isDead) {
