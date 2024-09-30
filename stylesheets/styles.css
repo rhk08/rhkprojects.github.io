@@ -23,6 +23,7 @@
     justify-content: center;
     text-align: center;
     transform: translateY(-20px);
+    animation: fadeInDrop 1.0s ease forwards;
 }
 
 body {
@@ -172,4 +173,15 @@ body {
     border-radius: 3px;
     cursor: pointer;
     font-size: 12px;
+}
+
+@keyframes fadeInDrop {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

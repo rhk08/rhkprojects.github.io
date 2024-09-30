@@ -629,7 +629,7 @@ window.onload = () => {
     // Show the tip on page load
     setTimeout(() => {
         tipContainer.classList.add('show');
-    }, 500); // Delay of 0.5s to make it smoother
+    }, 1000); // Delay of 0.5s to make it smoother
 
     // Automatically hide the tip after 10 seconds
     setTimeout(() => {
