@@ -140,7 +140,7 @@ const turningThreshold = 30;
 let spawnInterval = 1000; // Spawn new arrows every 5 seconds
 const spawnDistance = 200; //How many px away from another red arrow a div must be to spawn
 
-const baseSpawnLimit = 3;
+const baseSpawnLimit = 4;
 let spawnLimit = baseSpawnLimit;
 let absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
 
@@ -170,30 +170,48 @@ function increaseSpawnLimit() {
                 spawnLimitReached = true;
             }
         }
-    }, 10000);  // Increase spawn limit every second
+    }, 15000);  // Increase spawn limit every second
 }
 
-// Recalculate absolute spawn limit on window resize
+// Recalculate absolute spawn limit on window resize and current spawn limit
 window.addEventListener('resize', () => {
-    absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
+    if(!isDead) {
+        absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
+
+        //Disable Hard mode if enabled
+        if(spawnLimitReached && spawnLimit < absoluteSpawnLimit){
+            displayTip({
+                newTip: 'Hard Mode De-Activated',
+                buttonInnerText: '✖',
+                buttonColor: '#303030'
+            })
+            spawnLimitReached = false;
+        }else if(!spawnLimitReached && spawnLimit >= absoluteSpawnLimit){
+            displayTip({
+                newTip: 'Hard Mode Activated: Good Luck!',
+                buttonInnerText: 'Thanks.',
+                buttonColor: '#303030'
+            })
+            spawnLimitReached = true;
+        }
+    }
     console.log(absoluteSpawnLimit)
+
 });
 
 // Random rotation change in degrees when player is dead
 const minAngleChange = -0.5; 
 const maxAngleChange = 0.5;
 
-
 let obstacles = document.querySelectorAll('.red_arrow'); // Updated to be dynamic
-
 let randomTargetPosX = Math.random() * window.innerWidth; // Initial random position
 let randomTargetPosY = Math.random() * window.innerHeight; // Initial random position
-
 // Function to generate a new random target position
 function updateRandomTargetPosition() {
     randomTargetPosX = Math.random() * window.innerWidth;
     randomTargetPosY  = Math.random() * window.innerHeight;
 }
+
 
 function doEnemyMovement() {
     setInterval(() => {
@@ -276,7 +294,7 @@ function doEnemyMovement() {
                     angle += (angleDiff > 0 ? turningRateTowardsPlayer : -turningRateTowardsPlayer); // Turn by turning rate
                 }
 
-                if (spawnLimit >= absoluteSpawnLimit) {
+                if (spawnLimitReached) {
                     const currentTime = Date.now();
 
                     if (!speedIncreaseActive && (currentTime - lastSpeedBoostTime >= cooldownDuration)) {
@@ -297,7 +315,7 @@ function doEnemyMovement() {
                 speedIncreaseActive = false; // Mark boost as inactive
             }
 
-            console.log(speed)
+            // console.log(speed)
 
             // Update position based on angle and speed
             posX += speed * Math.cos(angle * (Math.PI / 180));
@@ -320,6 +338,7 @@ function doEnemyMovement() {
     }, 5); // Update interval set to 5ms for smooth movement
 }
 
+
 function calculateSpeedBoostMultiplier(distance) {
     const baseMultiplier = 1; // Base multiplier for minimum distance
     const maxMultiplier = 3; // Maximum multiplier for farthest distance
@@ -336,7 +355,6 @@ function calculateSpeedBoostMultiplier(distance) {
 }
 
 let spawnIntervalId;
-
 function spawnArrow() {
     // Clear the previous interval if it exists
     if (spawnIntervalId) {
@@ -390,7 +408,6 @@ function spawnArrow() {
         }
     }, spawnInterval);
 }
-
 function updateSpawnInterval(newInterval) {
     spawnInterval = newInterval;
     spawnArrow(); // Restart spawning with the new interval
@@ -455,7 +472,6 @@ function checkCollisions() {
         }
     });
 }
-
 function checkPlayerCollision() {
     // Get all obstacles
     const obstacles = document.querySelectorAll('.red_arrow');
@@ -538,9 +554,10 @@ function playerDeath() {
     
     spawnLimit = 0;
     absoluteSpawnLimit = 0;
+    // spawnLimitReached = false;
 
-    clearInterval(spawnIntervalId);
-    clearInterval(spawnLimitIncrementInterval);
+    clearInterval(spawnIntervalId); //Stop arrows from spawning
+    clearInterval(spawnLimitIncrementInterval); //Stop spawn limit from increasing
 
     enemyBaseSpeed = 0.6;
     turningRate = 0.6;
@@ -591,7 +608,6 @@ function triggerShakeAnimation0() {
         }, 150); // Match the duration of the shake animation (0.3s)
     }
 }
-
 function triggerShakeAnimation1() {
     document.body.classList.add('vertical-shaking');
 
@@ -600,7 +616,6 @@ function triggerShakeAnimation1() {
         document.body.classList.remove('vertical-shaking');
     }, 150); // Match the duration of the shake animation (0.3s)
 }
-
 function triggerShakeAnimation2() {
     document.body.classList.add('slight-vertical-shaking');
 
@@ -624,7 +639,6 @@ function changeMode() {
         });
     }
 }
-
 function checkMode(){
     const mode = document.getElementById('modeChange');
     if (isInvincible) {
@@ -638,13 +652,14 @@ function checkMode(){
         scoreDisplay.innerText = `Score 0`;
         if(spawnLimitReached){
             displayTip({
-                newTip: 'Hard Mode De-Activated:',
+                newTip: 'Hard Mode De-Activated',
                 buttonInnerText: '✖',
                 buttonColor: '#303030'
             })
             spawnLimitReached = false;
         }
         spawnLimit = baseSpawnLimit;
+
         if(gameBegin){
             displayTip({
                 newTip: 'Endless Mode Activated: You can Relax Now.',
@@ -667,7 +682,7 @@ function checkMode(){
         speedHighScore = 0;
         if(spawnLimitReached){
             displayTip({
-                newTip: 'Hard Mode De-Activated:',
+                newTip: 'Hard Mode De-Activated',
                 buttonInnerText: '✖',
                 buttonColor: '#303030'
             })
@@ -693,13 +708,6 @@ document.addEventListener('mouseup', stopTurning);
 
 gameArea.addEventListener('contextmenu', (event) => {
     event.preventDefault();
-});
-
-window.addEventListener('resize', () => {
-    if(!isDead){
-        absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
-    }
-    console.log(absoluteSpawnLimit);
 });
 
 let gameBegin = false;
