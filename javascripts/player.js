@@ -486,13 +486,26 @@ function playerDeath() {
     turningRate = 0.6;
     turningRateTowardsPlayer = 0.3;
 
-    document.getElementById('speedDisplay').innerText = `Max Speed ${speedHighScore} km/h`;
     finalScore = score;
+
+    const speedDisplay = document.getElementById('speedDisplay');
+    
+    speedDisplay.innerText = `Max Speed ${speedHighScore.toFixed(1)} km/h`;
     scoreDisplay.innerText = `Final Score ${finalScore}`;
+
     document.getElementById('flavourWrapper').innerHTML = `
         <h4 id="flavourText">You Died.</h4>
-        <h4 style="font-size: 16px;margin-bottom: 2px;">(Refresh to restart)</h4>
     `;
+
+    if (isDead) {
+        displayTip({
+            newTip: "You've just died, reload the page to try again!",
+            buttonInnerText: 'Reload',
+            onClickFunction: restartGame,
+            buttonColor: '#303030',
+            displayTime: 60000
+        })
+    }
 
 
     setInterval(() => {
@@ -538,10 +551,18 @@ function triggerShakeAnimation2() {
 }
 
 
-
 function changeMode() {
-    isInvincible = !isInvincible;
-    checkMode();
+    if(!isDead) {
+        isInvincible = !isInvincible;
+        checkMode();
+    }else{
+        displayTip({
+            newTip: "Tip: You're dead already (Reload to restart)",
+            displayTime: 3000,
+            buttonInnerText: 'Understood.',
+            buttonColor: '#303030',
+        });
+    }
 }
 
 function checkMode(){
@@ -555,6 +576,13 @@ function checkMode(){
         }
         score = 0;
         scoreDisplay.innerText = `Score 0`;
+        if(gameBegin){
+            displayTip({
+                newTip: 'Endless Mode Activated: You can Relax Now.',
+                buttonInnerText: 'Got it!',
+                buttonColor: '#2196F3'
+            })
+        }
 
     } else {
         mode.innerText = `Survival Mode`;
@@ -565,17 +593,11 @@ function checkMode(){
         }
         score = 0;
         scoreDisplay.innerText = `Score 0`;
-    }
-    
-    if (isDead && isInvincible) {
-        alert('Too late now.\n\n(Try refreshing the page)');
-        isInvincible = false; // Toggle invincibility off
-        mode.innerText = `Survival Mode`;
-        mode.classList.add('survival');
-        mode.classList.remove('endless');
-        if (gameBegin) { 
-            updateSpawnInterval(1000);
-        }
+        displayTip({
+            newTip: 'Survival Mode Activated: Watch Out!',
+            buttonInnerText: 'Got it.',
+            buttonColor: '#d23838'
+        })
     }
 }
 
@@ -615,29 +637,90 @@ window.onload = () => {
 
     checkMode();
 
-    const delayBeforeSpawn = 10000; // Delay in milliseconds (e.g., 2000ms = 2 seconds)
-
     setTimeout(() => {
-        gameBegin = true;
-        spawnArrow();
-        increaseSpawnLimit();
-    }, delayBeforeSpawn);
-
-
-    const tipContainer = document.getElementById('tipContainer');
-
-    // Show the tip on page load
-    setTimeout(() => {
-        tipContainer.classList.add('show');
-    }, 1000); // Delay of 0.5s to make it smoother
-
-    // Automatically hide the tip after 10 seconds
-    setTimeout(() => {
-        tipContainer.classList.remove('show');
-    }, 10000);
+        displayTip({
+            newTip: "Tip: Hold the Left or Right mouse buttons to turn and speed up!",
+            buttonInnerText: 'Got it!',
+            buttonColor: '#4cb94e',  // Optional: style the button
+            onClickFunction: closeTipAndStartGame, // Trigger game start when closed
+            displayTime: 9500 // Tip will still automatically disappear if not closed manually
+        });
+    
+        // Start the game after 10 seconds
+        gameStartTimeout = setTimeout(() => {
+            startGame();
+            showModeChangeButton(); // Start the game if not started already
+        }, 9500); // 10 seconds
+    }, 500); // 1s delay for smooth appearance
 };
 
-function closeTip() {
+let gameStartTimeout; // Variable to store the timeout ID
+
+function startGame() {
+    gameBegin = true;
+    spawnArrow();
+    increaseSpawnLimit();
+}
+
+function closeTipAndStartGame(button) {
+    closeTip(button); // Close the tip as usual
+    startGame();      // Start the game immediately after closing the tip
+    clearTimeout(gameStartTimeout);
+    showModeChangeButton(); // Clear the timeout if the tip is closed early
+}
+
+function showModeChangeButton() {
+    const mode = document.getElementById('modeChange');
+    mode.classList.remove('hidden');
+    mode.classList.add('fadeInDrop');
+}
+
+function closeTip(button) {
+    const tipElement = button.parentElement; // Get the tip element
+    tipElement.classList.remove('show'); // Hide the tip
+    setTimeout(() => {
+        tipElement.remove(); // Remove the tip element after hiding
+    }, 300); // Match with CSS transition duration
+}
+
+function displayTip(
+    { 
+        newTip = "Tip: Hold the Left or Right mouse buttons to turn and speed up!", 
+        buttonInnerText = 'Got it!', 
+        buttonColor = '#4cb94e', 
+        onClickFunction = closeTip, 
+        displayTime = 3000 
+    }
+) {
     const tipContainer = document.getElementById('tipContainer');
-    tipContainer.classList.remove('show');
+
+    // Create a new tip element
+    const tipElement = document.createElement('div');
+    tipElement.className = 'tip';
+
+    // Create and append the tip text
+    const tipText = document.createElement('span');
+    tipText.innerText = newTip;
+    tipElement.appendChild(tipText);
+
+    // Create and append the button
+    const closeTipBtn = document.createElement('button');
+    closeTipBtn.className = 'closeTipBtn'
+    closeTipBtn.innerText = buttonInnerText;
+    closeTipBtn.style.backgroundColor = buttonColor; // Change button color
+    closeTipBtn.onclick = () => onClickFunction(closeTipBtn); // Set onclick to closeTip
+    tipElement.appendChild(closeTipBtn);
+
+    // Append the new tip to the container
+    tipContainer.appendChild(tipElement);
+
+    // Show the tip with animation
+    setTimeout(() => {
+        tipElement.classList.add('show');
+    }, 10); // A slight delay for the CSS transition
+
+    // Optional: Automatically hide the tip after a certain time
+    setTimeout(() => {
+        closeTip(closeTipBtn); // Automatically close the tip
+    }, displayTime); // Adjust the time as needed (e.g., 5000 ms = 5 seconds)
 }

@@ -10,20 +10,22 @@
 <body>
     <audio id="playerDeathSound" src="sounds/undertale-damage-taken.mp3" preload="auto"></audio>
     <audio id="enemyDeathSound" src="sounds/undertale-damage-taken-altered.mp3" preload="auto"></audio>
-    <div id="modeChange" class="survival" onclick="changeMode()"></div>
-    <div id="tipContainer" class="tip">
-        <span id="tipText">Tip: Hold the Left or Right mouse buttons to turn and speed up!</span>
-        <button id="closeTipBtn" onclick="closeTip()">Got it!</button>
+
+    <div id="modeChange" class="hidden" onclick="changeMode()"></div>
+
+    <div id="tipContainer" class="tip-container">
+        <!-- Tips will be dynamically inserted here -->
     </div>
+
     <div id="message_box0">
         <div id="wrap">
-        <h1>Page is under</h1>
-        <h1 style="margin-top: -10px;">Construction.</h1>
-        <div id="flavourWrapper">
-            <h4 id="flavourText">Enjoy this game while you wait</h4>
-        </div>
-        <h4 id="speedDisplay" style="font-size: 20px; padding-top: 7px;">40.0 km/h</h4>
-        <h4 id="scoreDisplay" style="font-size: 20px; padding-top: 2px;">Score 0</h4>
+            <h1>Page is under</h1>
+            <h1 style="margin-top: -10px;">Construction.</h1>
+            <div id="flavourWrapper">
+                <h4 id="flavourText">Enjoy this game while you wait</h4>
+            </div>
+            <h4 id="speedDisplay" style="font-size: 20px; padding-top: 7px;">40.0 km/h</h4>
+            <h4 id="scoreDisplay" style="font-size: 20px; padding-top: 2px;">Score 0</h4>
         </div>
     </div>
     <div id="gameArea">
