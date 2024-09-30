@@ -122,10 +122,6 @@ function displaySpeed() {
     interval = setInterval(updateSpeedDisplay, 200);
 }
 
-function displayScore() {
-
-}
-
 const scoreDisplay = document.getElementById('scoreDisplay')
 
 function incrementScore() {
@@ -593,6 +589,10 @@ function checkMode(){
         }
         score = 0;
         scoreDisplay.innerText = `Score 0`;
+
+        speed = 0;
+        speedHighScore = 0;
+        
         displayTip({
             newTip: 'Survival Mode Activated: Watch Out!',
             buttonInnerText: 'Got it.',
