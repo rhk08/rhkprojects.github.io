@@ -11,7 +11,6 @@ let posX;
 let posY;
 let speed = 3.0;
 const baseSpeed = 3.0;
-const maxSpeed = 12;
 const speedIncreaseRate = 0.012;
 const speedDecreaseRate = 0.04;
 
@@ -108,7 +107,7 @@ function displaySpeed() {
         }
 
         const speedFluctuation = Math.random() * 2 * a - a;
-        const speedFluctuation2 = 1.5;
+        const speedFluctuation2 = 3;
 
         let displayedSpeed = roundToOneDecimalPlace(40 + speedFluctuation2 * (speed - baseSpeed) + speedFluctuation);
 
@@ -191,7 +190,7 @@ function getNearbyArrows(arrow) {
 
 
 //Enemy functions
-let enemyBaseSpeed = 2.0;
+let enemyBaseSpeed = 2.5;
 
 let turningRate = 1.0;
 let turningRateTowardsPlayer = 2.0; // Degrees to turn per interval
@@ -699,9 +698,9 @@ function playerDeath() {
     clearInterval(spawnIntervalId); //Stop arrows from spawning
     clearInterval(spawnLimitIncrementInterval); //Stop spawn limit from increasing
 
-    enemyBaseSpeed = 0.6;
-    turningRate = 0.6;
-    turningRateTowardsPlayer = 0.3;
+    enemyBaseSpeed = 1.0;
+    turningRate = 1.2;
+    turningRateTowardsPlayer = 0.6;
 
     finalScore = score;
 
