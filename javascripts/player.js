@@ -851,7 +851,6 @@ function checkMode(){
                 buttonInnerText: 'Got it.',
                 buttonColor: '#d23838'
             })
-
             
             if(visibleArrows.length > 0){
                 playerDeathSound.currentTime = 0;
