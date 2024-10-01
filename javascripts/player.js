@@ -130,6 +130,64 @@ function incrementScore() {
 
 }
 
+//Grid functions
+// Create a grid object
+let gridSize = 100; // Adjust grid size as needed
+let grid = {}; // Stores arrows in different grid cells
+
+// Function to get the grid cell for a given position
+function getGridCell(x, y) {
+    let cellX = Math.floor(x / gridSize);
+    let cellY = Math.floor(y / gridSize);
+    return `${cellX},${cellY}`;
+}
+// Function to add an arrow to the grid
+function addToGrid(arrow) {
+    let posX = parseFloat(arrow.style.left);
+    let posY = parseFloat(arrow.style.top);
+    let cell = getGridCell(posX, posY);
+    
+    if (!grid[cell]) {
+        grid[cell] = [];
+    }
+    grid[cell].push(arrow);
+}
+// Function to remove an arrow from the grid
+function removeFromGrid(arrow) {
+    let posX = parseFloat(arrow.style.left);
+    let posY = parseFloat(arrow.style.top);
+    let cell = getGridCell(posX, posY);
+    
+    if (grid[cell]) {
+        grid[cell] = grid[cell].filter(a => a !== arrow);
+    }
+}
+// Function to update an arrow's position in the grid
+function updateGridPosition(arrow) {
+    removeFromGrid(arrow);
+    addToGrid(arrow);
+}
+function getNearbyArrows(arrow) {
+    let posX = parseFloat(arrow.style.left);
+    let posY = parseFloat(arrow.style.top);
+    let cell = getGridCell(posX, posY);
+    let [cellX, cellY] = cell.split(',').map(Number);
+
+    let nearbyArrows = [];
+    
+    // Check arrows in the current cell and neighboring cells
+    for (let x = cellX - 1; x <= cellX + 1; x++) {
+        for (let y = cellY - 1; y <= cellY + 1; y++) {
+            let nearbyCell = `${x},${y}`;
+            if (grid[nearbyCell]) {
+                nearbyArrows.push(...grid[nearbyCell]);
+            }
+        }
+    }
+    return nearbyArrows;
+}
+
+
 //Enemy functions
 let enemyBaseSpeed = 1.0;
 
@@ -150,7 +208,7 @@ let absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
 // Function to calculate the absolute spawn limit based on screen size
 function calculateAbsoluteSpawnLimit() {
     const screenArea = window.innerWidth * window.innerHeight;
-    return Math.floor(screenArea / 90000);  // Adjust the divisor to control spawn density
+    return Math.floor(screenArea / 40000);  // Adjust the divisor to control spawn density
 }
 
 let spawnLimitReached = false;
@@ -170,7 +228,7 @@ function increaseSpawnLimit() {
                 spawnLimitReached = true;
             }
         }
-    }, 15000);  // Increase spawn limit every second
+    }, 1000);  // Increase spawn limit every second
 }
 
 // Recalculate absolute spawn limit on window resize and current spawn limit
@@ -215,12 +273,17 @@ function updateRandomTargetPosition() {
 
 function doEnemyMovement() {
     setInterval(() => {
-        const obstacles = document.querySelectorAll('.red_arrow');
-        
+        const obstacles = document.querySelectorAll('.red_arrow');        
         const playerPosX = parseFloat(arrow.style.left) + arrow.offsetWidth / 2; // Centered position of the player
         const playerPosY = parseFloat(arrow.style.top) + arrow.offsetHeight / 2;
 
-        obstacles.forEach((arrow, index) => {
+        grid = {}; //Create new grid
+        obstacles.forEach((arrow) => {
+            // Add each arrow to the grid based on its position
+            addToGrid(arrow);
+        });
+
+        obstacles.forEach((arrow) => {
             let posX = parseFloat(arrow.style.left);
             let posY = parseFloat(arrow.style.top);
             let angle = parseFloat(arrow.style.transform.replace('rotate(', '').replace('deg)', '')) || Math.random() * 360;
@@ -237,8 +300,12 @@ function doEnemyMovement() {
 
             // Avoidance behavior
             let isAvoiding = false; // Flag to check if the arrow is avoiding another arrow
-            obstacles.forEach((otherArrow, otherIndex) => {
-                if (index !== otherIndex) { // Don't check against itself
+
+
+            let nearbyArrows = getNearbyArrows(arrow);
+
+            nearbyArrows.forEach((otherArrow) => {
+                if (otherArrow !== arrow) { // Don't check against itself
                     const otherPosX = parseFloat(otherArrow.style.left);
                     const otherPosY = parseFloat(otherArrow.style.top);
 
@@ -332,6 +399,9 @@ function doEnemyMovement() {
             arrow.style.top = `${posY}px`;
             arrow.style.transform = `rotate(${angle}deg)`; // Update rotation after angle adjustment
 
+            // Update grid position after movement
+            updateGridPosition(arrow);
+
             checkCollisions();
             checkPlayerCollision();
         });
@@ -421,8 +491,15 @@ function checkCollisions() {
     obstacles = document.querySelectorAll('.red_arrow');
     const arrowsToDestroy = new Set(); // Use a Set to avoid duplicate entries
 
-    for (let i = 0; i < obstacles.length; i++) {
-        const arrowA = obstacles[i];
+    // Clear the grid
+    grid = {};
+
+    // Add each arrow to the grid based on its position
+    obstacles.forEach((arrow) => {
+        addToGrid(arrow);
+    });
+
+    obstacles.forEach((arrowA) => {
         const rectA = arrowA.getBoundingClientRect();
 
         const smallerRectA = {
@@ -432,31 +509,35 @@ function checkCollisions() {
             bottom: rectA.bottom - rectA.height * scaleFactor // Adjust bottom position
         };
 
-        for (let j = i + 1; j < obstacles.length; j++) {
-            const arrowB = obstacles[j];
-            const rectB = arrowB.getBoundingClientRect();
+        // Get nearby arrows using the grid
+        const nearbyArrows = getNearbyArrows(arrowA);
 
-            // Create smaller bounding box for arrowB using scaleFactor
-            const smallerRectB = {
-                left: rectB.left + rectB.width * scaleFactor,  // Adjust left position
-                right: rectB.right - rectB.width * scaleFactor, // Adjust right position
-                top: rectB.top + rectB.height * scaleFactor,    // Adjust top position
-                bottom: rectB.bottom - rectB.height * scaleFactor // Adjust bottom position
-            };
+        nearbyArrows.forEach((arrowB) => {
+            if (arrowA !== arrowB) { // Ensure not checking against itself
+                const rectB = arrowB.getBoundingClientRect();
 
-            // Check for collision using the smaller bounding box
-            if (
-                smallerRectA.left < smallerRectB.right &&
-                smallerRectA.right > smallerRectB.left &&
-                smallerRectA.top < smallerRectB.bottom &&
-                smallerRectA.bottom > smallerRectB.top
-            ) {
-                // Collision detected, mark arrows for destruction
-                arrowsToDestroy.add(arrowA);
-                arrowsToDestroy.add(arrowB);
+                // Create smaller bounding box for arrowB using scaleFactor
+                const smallerRectB = {
+                    left: rectB.left + rectB.width * scaleFactor,
+                    right: rectB.right - rectB.width * scaleFactor,
+                    top: rectB.top + rectB.height * scaleFactor,
+                    bottom: rectB.bottom - rectB.height * scaleFactor
+                };
+
+                // Check for collision using the smaller bounding box
+                if (
+                    smallerRectA.left < smallerRectB.right &&
+                    smallerRectA.right > smallerRectB.left &&
+                    smallerRectA.top < smallerRectB.bottom &&
+                    smallerRectA.bottom > smallerRectB.top
+                ) {
+                    // Collision detected, mark arrows for destruction
+                    arrowsToDestroy.add(arrowA);
+                    arrowsToDestroy.add(arrowB);
+                }
             }
-        }
-    }
+        });
+    });
 
     // Destroy the colliding arrows
     if (arrowsToDestroy.size > 0) {
@@ -473,10 +554,6 @@ function checkCollisions() {
     });
 }
 function checkPlayerCollision() {
-    // Get all obstacles
-    const obstacles = document.querySelectorAll('.red_arrow');
-    const arrowsDestroyedByPlayer = new Set();
-
     // Get player's bounding rect and adjust with scaleFactor
     const rectA = arrow.getBoundingClientRect();
     const smallerRectA = {
@@ -488,11 +565,13 @@ function checkPlayerCollision() {
 
     // Flag to determine if player has died
     let playerDied = false;
+    const arrowsDestroyedByPlayer = new Set();
+
+    //Get nearby arrows
+    const nearbyArrows = getNearbyArrows(arrow);
 
     // Loop through all obstacles
-    for (let i = 0; i < obstacles.length; i++) {
-        const arrowB = obstacles[i];
-
+    nearbyArrows.forEach((arrowB) => {
         // Get bounding rect of the current arrow and adjust with scaleFactor
         const rectB = arrowB.getBoundingClientRect();
         const smallerRectB = {
@@ -514,7 +593,7 @@ function checkPlayerCollision() {
                 playerDied = true; // Set playerDied to true if a collision is detected
             }
         }
-    }
+    });
 
     // Remove collided arrows and update score
     if (arrowsDestroyedByPlayer.size > 0 && isInvincible) {
