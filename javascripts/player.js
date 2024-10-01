@@ -868,12 +868,30 @@ function checkMode(){
 
 document.addEventListener('mousedown', (event) => {
     if (event.button === 0) {
-        startTurning(-1);
+        startTurning(-1); // Left mouse button
     } else if (event.button === 2) {
-        startTurning(1);
+        startTurning(1); // Right mouse button
     }
 });
+
 document.addEventListener('mouseup', stopTurning);
+
+// Add arrow key functionality
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') {
+        startTurning(-1); // Turn left when the left arrow key is pressed
+    } else if (event.key === 'ArrowRight') {
+        startTurning(1); // Turn right when the right arrow key is pressed
+    }
+});
+
+document.addEventListener('keyup', (event) => {
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        stopTurning(); // Stop turning when the arrow key is released
+    }
+});
+
+
 gameArea.addEventListener('contextmenu', (event) => {
     event.preventDefault();
 });
