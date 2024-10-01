@@ -1,4 +1,4 @@
-const arrow = document.getElementById('arrow');
+const player = document.getElementById('arrow');
 const gameArea = document.getElementById('gameArea');
 
 const playerDeathSound = document.getElementById('playerDeathSound');
@@ -37,9 +37,9 @@ function getRandomPositionAndAngle() {
     posY = Math.random() * (areaHeight - 20);
     angle = Math.random() * 360;
 
-    arrow.style.left = `${posX}px`;
-    arrow.style.top = `${posY}px`;
-    arrow.style.transform = `rotate(${angle}deg)`;
+    player.style.left = `${posX}px`;
+    player.style.top = `${posY}px`;
+    player.style.transform = `rotate(${angle}deg)`;
 }
 
 function startMovement() {
@@ -47,8 +47,8 @@ function startMovement() {
         posX += speed * Math.cos(angle * (Math.PI / 180));
         posY += speed * Math.sin(angle * (Math.PI / 180));
 
-        arrow.style.left = `${posX}px`;
-        arrow.style.top = `${posY}px`;
+        player.style.left = `${posX}px`;
+        player.style.top = `${posY}px`;
 
         if (posX < 0) posX = window.innerWidth;
         if (posX > window.innerWidth) posX = 0;
@@ -74,7 +74,7 @@ function startTurning(direction) {
 
     rotationInterval = setInterval(() => {
         angle += direction * turnSpeed;
-        arrow.style.transform = `rotate(${angle}deg)`;
+        player.style.transform = `rotate(${angle}deg)`;
         
         if (turnSpeed < maxTurnSpeed) {
             turnSpeed *= 1+turnIncreaseRate;
@@ -198,12 +198,37 @@ const turningThreshold = 30;
 let spawnInterval = 1000; // Spawn new arrows every 5 seconds
 const spawnDistance = 200; //How many px away from another red arrow a div must be to spawn
 
-const baseSpawnLimit = 4;
+const baseSpawnLimit = 6;
 let spawnLimit = baseSpawnLimit;
 let absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
+let spawnLimitReached = false;
 
 let difficulty = 0;
 let difficultyScaler = 0.0001;
+
+//Create arrows
+const visibleArrows = [];
+const hiddenArrows = [];
+
+// Preload arrows
+for (let i = 0; i < spawnLimit; i++) {
+    const arrow = document.createElement('div');
+    arrow.className = 'red_arrow';
+    arrow.style.display = 'none'; // Hide initially
+    gameArea.appendChild(arrow);
+    hiddenArrows.push(arrow);
+}
+
+function removeArrow(arrow) {
+    arrow.style.display = 'none';
+    
+    const visibleIndex = visibleArrows.indexOf(arrow);
+    if (visibleIndex !== -1) {
+        visibleArrows.splice(visibleIndex, 1);  // Remove from visible arrows list
+    }
+
+    hiddenArrows.push(arrow);  // Return to hidden arrows pool
+}
 
 // Initial speed for each arrow
 // Flag to track if speed increase is active
@@ -211,27 +236,45 @@ let difficultyScaler = 0.0001;
 // Function to calculate the absolute spawn limit based on screen size
 function calculateAbsoluteSpawnLimit() {
     const screenArea = window.innerWidth * window.innerHeight;
+    console.log(Math.floor(screenArea / 40000));
     return Math.floor(screenArea / 40000);  // Adjust the divisor to control spawn density
 }
 
-let spawnLimitReached = false;
-// Function to gradually increase the spawn limit and turn on hard mode
 let spawnLimitIncrementInterval;
 function increaseSpawnLimit() {
     spawnLimitIncrementInterval = setInterval(() => {
         if (spawnLimit < absoluteSpawnLimit) {
-            spawnLimit++;
+            spawnLimit++;  // Increment spawn limit
+
+            // Add new arrow to the pool
+            const newArrow = document.createElement('div');
+            newArrow.className = 'red_arrow';
+            newArrow.style.display = 'none';  // Initially hidden
+            gameArea.appendChild(newArrow);  // Add to the game area
+
+            hiddenArrows.push(newArrow);  // Add to the hidden arrows pool
+
         } else {
             if (!spawnLimitReached) {
                 displayTip({
                     newTip: 'Hard Mode Activated: Good Luck!',
                     buttonInnerText: 'Thanks.',
                     buttonColor: '#303030'
-                })
+                });
                 spawnLimitReached = true;
             }
+
+            // If spawn limit exceeds absoluteSpawnLimit, remove hidden arrows
+            if (spawnLimit > absoluteSpawnLimit) {
+                // Remove hidden arrows until the spawn limit reaches the absolute limit
+                while (spawnLimit > absoluteSpawnLimit && hiddenArrows.length > 0) {
+                    const hiddenArrow = hiddenArrows.pop();  // Get the last hidden arrow
+                    hiddenArrow.remove();  // Remove it from the DOM
+                    spawnLimit--;  // Decrease spawn limit accordingly
+                }
+            }
         }
-    }, 1000);  // Increase spawn limit every second
+    }, 10000);  // Increase spawn limit every second
 }
 
 // Recalculate absolute spawn limit on window resize and current spawn limit
@@ -264,7 +307,6 @@ window.addEventListener('resize', () => {
 const minAngleChange = -0.5; 
 const maxAngleChange = 0.5;
 
-let obstacles = document.querySelectorAll('.red_arrow'); // Updated to be dynamic
 let randomTargetPosX = Math.random() * window.innerWidth; // Initial random position
 let randomTargetPosY = Math.random() * window.innerHeight; // Initial random position
 // Function to generate a new random target position
@@ -276,9 +318,9 @@ function updateRandomTargetPosition() {
 
 function doEnemyMovement() {
     setInterval(() => {
-        const obstacles = document.querySelectorAll('.red_arrow');        
-        const playerPosX = parseFloat(arrow.style.left) + arrow.offsetWidth / 2; // Centered position of the player
-        const playerPosY = parseFloat(arrow.style.top) + arrow.offsetHeight / 2;
+        const obstacles = visibleArrows;       
+        const playerPosX = parseFloat(player.style.left) + player.offsetWidth / 2; // Centered position of the player
+        const playerPosY = parseFloat(player.style.top) + player.offsetHeight / 2;
 
         grid = {}; //Create new grid
         obstacles.forEach((arrow) => {
@@ -292,6 +334,9 @@ function doEnemyMovement() {
         }else{
             difficulty += difficultyScaler;
         }
+
+        console.log('Visible Arrows:', visibleArrows);
+        console.log('Hidden Arrows:', hiddenArrows);
 
         obstacles.forEach((arrow) => {
             let posX = parseFloat(arrow.style.left);
@@ -418,7 +463,6 @@ function doEnemyMovement() {
     }, 10); // Update interval set to 5ms for smooth movement
 }
 
-
 function calculateSpeedBoostMultiplier(distance) {
     const baseMultiplier = 1; // Base multiplier for minimum distance
     const maxMultiplier = 3; // Maximum multiplier for farthest distance
@@ -443,48 +487,62 @@ function spawnArrow() {
 
     // Create a new interval with the current spawnInterval value
     spawnIntervalId = setInterval(() => {
-        if (obstacles.length < spawnLimit) {
-            const newArrow = document.createElement('div');
-            newArrow.className = 'red_arrow';
+        if (visibleArrows.length < spawnLimit) {
 
-            // Set random position within the bounds of the game area
-            const randomX = Math.random() * (gameArea.clientWidth - 20); // Adjusting for arrow size
-            const randomY = Math.random() * (gameArea.clientHeight - 20); // Adjusting for arrow size
+            let newArrow = null;
 
-            let isTooClose = false;
-
-            obstacles.forEach((arrow) => {
-                const otherPosX = parseFloat(arrow.style.left);
-                const otherPosY = parseFloat(arrow.style.top);
-
-                const distance = Math.sqrt(Math.pow(otherPosX - randomX, 2) + Math.pow(otherPosY - randomY, 2));
-
-                // If distance is less than a threshold (e.g., 50 pixels), set isTooClose to true
-                if (distance < spawnDistance) { // Adjust the threshold as needed
-                    isTooClose = true;
-                }
-            });
-
-            // Check distance from the player
-            const playerPosX = parseFloat(arrow.style.left) + arrow.offsetWidth / 2;
-            const playerPosY = parseFloat(arrow.style.top) + arrow.offsetHeight / 2;
-            let distance = Math.sqrt(Math.pow(playerPosX - randomX, 2) + Math.pow(playerPosY - randomY, 2));
-            if (distance < spawnDistance) { // Adjust the threshold as needed
-                isTooClose = true;
+            // Check if we have hidden arrows available in the pool
+            if (hiddenArrows.length > 0) {
+                newArrow = hiddenArrows.pop();  // Reuse a hidden arrow
+                newArrow.style.display = 'block';  // Make it visible again
             }
 
-            // Only spawn the new arrow if no nearby arrows were found
-            if (!isTooClose) {
-                // Set random initial rotation
-                const randomAngle = Math.random() * 360; 
+            if (newArrow) {
+                // Set random position within the bounds of the game area
+                const randomX = Math.random() * (gameArea.clientWidth - 20);
+                const randomY = Math.random() * (gameArea.clientHeight - 20);
 
-                // Apply position and rotation
+                // Set position and rotation
                 newArrow.style.left = `${randomX}px`;
                 newArrow.style.top = `${randomY}px`;
+                const randomAngle = Math.random() * 360;
                 newArrow.style.transform = `rotate(${randomAngle}deg)`;
 
-                gameArea.appendChild(newArrow); // Add the new arrow to the game area
+                // Get nearby arrows based on the new arrow's position
+                const nearbyArrows = getNearbyArrows(newArrow);
+                let isTooClose = false;
+
+                // Check distance to nearby arrows
+                nearbyArrows.forEach((arrow) => {
+                    const otherPosX = parseFloat(arrow.style.left);
+                    const otherPosY = parseFloat(arrow.style.top);
+                    const distance = Math.sqrt(Math.pow(otherPosX - randomX, 2) + Math.pow(otherPosY - randomY, 2));
+
+                    if (distance < spawnDistance) {
+                        isTooClose = true;
+                    }
+                });
+
+                // Check for proximity to the player (if needed)
+                const playerPosX = parseFloat(player.style.left) + player.offsetWidth / 2;
+                const playerPosY = parseFloat(player.style.top) + player.offsetHeight / 2;
+                const distanceToPlayer = Math.sqrt(Math.pow(playerPosX - randomX, 2) + Math.pow(playerPosY - randomY, 2));
+
+                if (distanceToPlayer < spawnDistance) {
+                    isTooClose = true;
+                }
+
+                // Only keep the new arrow if no nearby arrows were found
+                if (!isTooClose) {
+                    visibleArrows.push(newArrow);  // Add to visible arrows list
+                } else {
+                    // Return arrow to hidden state if not used
+                    newArrow.style.display = 'none';
+                    hiddenArrows.push(newArrow);  // Return to hidden arrows pool
+                }
             }
+        } else {
+
         }
     }, spawnInterval);
 }
@@ -498,16 +556,8 @@ const scaleFactor = 0.2;
 const playerScaleFactor = 0.3; 
 
 function checkCollisions() {
-    obstacles = document.querySelectorAll('.red_arrow');
+    const obstacles = visibleArrows; 
     const arrowsToDestroy = new Set(); // Use a Set to avoid duplicate entries
-
-    // Clear the grid
-    grid = {};
-
-    // Add each arrow to the grid based on its position
-    obstacles.forEach((arrow) => {
-        addToGrid(arrow);
-    });
 
     obstacles.forEach((arrowA) => {
         const rectA = arrowA.getBoundingClientRect();
@@ -557,15 +607,15 @@ function checkCollisions() {
         enemyDeathSound.play();
     }
     arrowsToDestroy.forEach((arrow) => {
-        arrow.remove(); // Remove the arrow from the DOM
-        if(!isDead) {
+        removeArrow(arrow);
+        if (!isDead) {
             incrementScore();
         }
     });
 }
 function checkPlayerCollision() {
     // Get player's bounding rect and adjust with scaleFactor
-    const rectA = arrow.getBoundingClientRect();
+    const rectA = player.getBoundingClientRect();
     const smallerRectA = {
         left: rectA.left + rectA.width * playerScaleFactor,
         right: rectA.right - rectA.width * playerScaleFactor,
@@ -578,7 +628,7 @@ function checkPlayerCollision() {
     const arrowsDestroyedByPlayer = new Set();
 
     //Get nearby arrows
-    const nearbyArrows = getNearbyArrows(arrow);
+    const nearbyArrows = getNearbyArrows(player);
 
     // Loop through all obstacles
     nearbyArrows.forEach((arrowB) => {
@@ -620,12 +670,11 @@ function checkPlayerCollision() {
         enemyDeathSound.play();
     }
     arrowsDestroyedByPlayer.forEach((arrow) => {
-        arrow.remove(); // Remove the arrow from the DOM
+        removeArrow(arrow); // Remove the arrow from the DOM
         if(!isDead) {
             incrementScore();
         }
     });
-
     // Call playerDeath only once if the player has died
     if (playerDied) {
         playerDeath();
@@ -637,7 +686,7 @@ function playerDeath() {
     playerDeathSound.volume = 0.4; // Reset the sound to start
     playerDeathSound.play();
 
-    arrow.remove();
+    player.remove();
     triggerShakeAnimation1();
     isDead = true;
     
@@ -728,15 +777,24 @@ function changeMode() {
         });
     }
 }
+
+let initialEndlessModeTimer;
 function checkMode(){
     const mode = document.getElementById('modeChange');
     if (isInvincible) {
         mode.innerText = `Endless Mode`;
         mode.classList.add('endless');
         mode.classList.remove('survival');
-        if (gameBegin) { 
+
+        if(gameBegin){
             updateSpawnInterval(300);
+        }else{
+            updateSpawnInterval(1000);
+            initialEndlessModeTimer = setTimeout(() => {
+                updateSpawnInterval(300); // Start the game if not started already
+            }, 15000);
         }
+
         score = 0;
         scoreDisplay.innerText = `Score 0`;
         if(spawnLimitReached){
@@ -755,15 +813,25 @@ function checkMode(){
                 buttonInnerText: 'Got it!',
                 buttonColor: '#2196F3'
             })
+
+            if(visibleArrows.length > 0){
+                playerDeathSound.currentTime = 0;
+                playerDeathSound.volume = 0.4;
+                playerDeathSound.play();
+                triggerShakeAnimation1()
+
+                for (let i = visibleArrows.length - 1; i >= 0; i--) {
+                    removeArrow(visibleArrows[i]); // Call removeArrow for each arrow
+                }
+            }
+
         }
 
     } else {
         mode.innerText = `Survival Mode`;
         mode.classList.add('survival');
         mode.classList.remove('endless');
-        if (gameBegin) { 
-            updateSpawnInterval(1000);
-        }
+        updateSpawnInterval(1000);
         score = 0;
         scoreDisplay.innerText = `Score 0`;
         spawnLimit = baseSpawnLimit;
@@ -777,11 +845,25 @@ function checkMode(){
             })
             spawnLimitReached = false;
         }
-        displayTip({
-            newTip: 'Survival Mode Activated: Watch Out!',
-            buttonInnerText: 'Got it.',
-            buttonColor: '#d23838'
-        })
+        if(gameBegin){
+            displayTip({
+                newTip: 'Survival Mode Activated: Watch Out!',
+                buttonInnerText: 'Got it.',
+                buttonColor: '#d23838'
+            })
+
+            
+            if(visibleArrows.length > 0){
+                playerDeathSound.currentTime = 0;
+                playerDeathSound.volume = 0.4;
+                playerDeathSound.play();
+                triggerShakeAnimation1()
+
+                for (let i = visibleArrows.length - 1; i >= 0; i--) {
+                    removeArrow(visibleArrows[i]); // Call removeArrow for each arrow
+                }
+            }
+        }
     }
 }
 
@@ -809,8 +891,6 @@ window.onload = () => {
     
     updateRandomTargetPosition();
 
-    checkMode();
-
     setTimeout(() => {
         displayTip({
             newTip: "Tip: Hold the Left or Right mouse buttons to turn and speed up!",
@@ -831,9 +911,11 @@ window.onload = () => {
 let gameStartTimeout; // Variable to store the timeout ID
 
 function startGame() {
+    checkMode();
     gameBegin = true;
     spawnArrow();
     increaseSpawnLimit();
+
 }
 
 function closeTipAndStartGame(button) {
