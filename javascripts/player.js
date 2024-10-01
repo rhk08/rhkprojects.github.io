@@ -335,8 +335,8 @@ function doEnemyMovement() {
             difficulty += difficultyScaler;
         }
 
-        console.log('Visible Arrows:', visibleArrows);
-        console.log('Hidden Arrows:', hiddenArrows);
+        // console.log('Visible Arrows:', visibleArrows);
+        // console.log('Hidden Arrows:', hiddenArrows);
 
         obstacles.forEach((arrow) => {
             let posX = parseFloat(arrow.style.left);
@@ -777,7 +777,6 @@ function changeMode() {
         });
     }
 }
-
 let initialEndlessModeTimer;
 function checkMode(){
     const mode = document.getElementById('modeChange');
@@ -866,6 +865,7 @@ function checkMode(){
     }
 }
 
+
 document.addEventListener('mousedown', (event) => {
     if (event.button === 0) {
         startTurning(-1);
@@ -873,9 +873,7 @@ document.addEventListener('mousedown', (event) => {
         startTurning(1);
     }
 });
-
 document.addEventListener('mouseup', stopTurning);
-
 gameArea.addEventListener('contextmenu', (event) => {
     event.preventDefault();
 });
