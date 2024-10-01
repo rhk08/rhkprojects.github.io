@@ -236,7 +236,7 @@ function removeArrow(arrow) {
 // Function to calculate the absolute spawn limit based on screen size
 function calculateAbsoluteSpawnLimit() {
     const screenArea = window.innerWidth * window.innerHeight;
-    console.log(Math.floor(screenArea / 40000));
+    // console.log(Math.floor(screenArea / 40000));
     return Math.floor(screenArea / 40000);  // Adjust the divisor to control spawn density
 }
 
@@ -299,7 +299,7 @@ window.addEventListener('resize', () => {
             spawnLimitReached = true;
         }
     }
-    console.log(absoluteSpawnLimit)
+    // console.log(absoluteSpawnLimit)
 
 });
 
@@ -814,8 +814,8 @@ function checkMode(){
             })
 
             if(visibleArrows.length > 0){
-                playerDeathSound.currentTime = 0;
-                playerDeathSound.volume = 0.4;
+                playerDeathSound.currentTime = 0.2;
+                playerDeathSound.volume = 0.5;
                 playerDeathSound.play();
                 triggerShakeAnimation1()
 
@@ -852,8 +852,8 @@ function checkMode(){
             })
             
             if(visibleArrows.length > 0){
-                playerDeathSound.currentTime = 0;
-                playerDeathSound.volume = 0.4;
+                playerDeathSound.currentTime = 0.2;
+                playerDeathSound.volume = 0.5;
                 playerDeathSound.play();
                 triggerShakeAnimation1()
 
@@ -925,7 +925,7 @@ function closeTipAndStartGame(button) {
 function showModeChangeButton() {
     const mode = document.getElementById('modeChange');
     mode.classList.remove('hidden');
-    mode.classList.add('fadeInDrop');
+    mode.classList.add('buttonFadeInDrop');
 }
 
 function closeTip(button) {
