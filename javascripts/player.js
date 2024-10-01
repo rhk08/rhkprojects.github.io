@@ -65,6 +65,8 @@ function startMovement() {
     }, 10);
 }
 
+
+
 function startTurning(direction) {
     if (isTurning) return;
 
@@ -864,31 +866,82 @@ function checkMode(){
         }
     }
 }
-
+ // Assuming this is your existing boolean for turning
+let isLeftButtonDown = false; // Track the state of the left button
+let isRightButtonDown = false;
+let stopTimeout;  // Track the state of the right button
 
 document.addEventListener('mousedown', (event) => {
-    if (event.button === 0) {
-        startTurning(-1); // Left mouse button
-    } else if (event.button === 2) {
-        startTurning(1); // Right mouse button
+    if (event.button === 0) { // Left mouse button
+        isLeftButtonDown = true; // Set left button state to down
+        if (isRightButtonDown) {
+            stopTurning(); // Stop turning right if the right button is already down
+        }
+        startTurning(-1); // Start turning left
+    } else if (event.button === 2) { // Right mouse button
+        isRightButtonDown = true; // Set right button state to down
+        if (isLeftButtonDown) {
+            stopTurning(); // Stop turning left if the left button is already down
+        }
+        startTurning(1); // Start turning right
     }
 });
 
-document.addEventListener('mouseup', stopTurning);
+document.addEventListener('mouseup', (event) => {
+    if (event.button === 0) { // Left mouse button
+        isLeftButtonDown = false; // Reset left button state
+    } else if (event.button === 2) { // Right mouse button
+        isRightButtonDown = false; // Reset right button state
+    }
+
+    // Clear any existing timeout
+    clearTimeout(stopTimeout);
+
+    // Set a timeout to stop turning if no other button is pressed
+    stopTimeout = setTimeout(() => {
+        if (!isLeftButtonDown && !isRightButtonDown) {
+            stopTurning(); // Only stop turning if no buttons are pressed
+        }
+    }, 5); // 100ms delay
+});
+
+let isLeftArrowDown = false; // Track the state of the left arrow key
+let isRightArrowDown = false; // Track the state of the right arrow key
 
 // Add arrow key functionality
+// Arrow key controls
 document.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowLeft') {
+        isLeftArrowDown = true; // Track left arrow key state
+        if (isRightArrowDown) {
+            stopTurning(); // Stop turning right if the right arrow is already down
+        }
         startTurning(-1); // Turn left when the left arrow key is pressed
     } else if (event.key === 'ArrowRight') {
+        isRightArrowDown = true; // Track right arrow key state
+        if (isLeftArrowDown) {
+            stopTurning(); // Stop turning left if the left arrow is already down
+        }
         startTurning(1); // Turn right when the right arrow key is pressed
     }
 });
 
 document.addEventListener('keyup', (event) => {
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-        stopTurning(); // Stop turning when the arrow key is released
+    if (event.key === 'ArrowLeft') {
+        isLeftArrowDown = false; // Reset left arrow key state
+    } else if (event.key === 'ArrowRight') {
+        isRightArrowDown = false; // Reset right arrow key state
     }
+
+    // Clear any existing timeout
+    clearTimeout(stopTimeout);
+
+    // Set a timeout to stop turning if no other button is pressed
+    stopTimeout = setTimeout(() => {
+        if (!isLeftButtonDown && !isRightButtonDown && !isLeftArrowDown && !isRightArrowDown) {
+            stopTurning(); // Only stop turning if no buttons are pressed
+        }
+    }, 5); // 100ms delay
 });
 
 
