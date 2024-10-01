@@ -12,7 +12,7 @@ let posY;
 let speed = 3.0;
 const baseSpeed = 3.0;
 const maxSpeed = 12;
-const speedIncreaseRate = 0.016;
+const speedIncreaseRate = 0.012;
 const speedDecreaseRate = 0.04;
 
 let interval;
