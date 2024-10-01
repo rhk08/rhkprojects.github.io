@@ -9,18 +9,18 @@ const flavourText = document.getElementById('flavourText');
 let angle;
 let posX;
 let posY;
-let speed = 1.5;
-const baseSpeed = 1.5;
-const maxSpeed = 6;
-const speedIncreaseRate = 0.008;
-const speedDecreaseRate = 0.02;
+let speed = 3.0;
+const baseSpeed = 3.0;
+const maxSpeed = 12;
+const speedIncreaseRate = 0.016;
+const speedDecreaseRate = 0.04;
 
 let interval;
 let rotationInterval;
 let isTurning = false;
 let turnSpeed = 1;
 const maxTurnSpeed = 20; 
-const turnIncreaseRate = 0.004;
+const turnIncreaseRate = 0.008;
 
 let speedHighScore = 0;
 let score = 0;
@@ -62,7 +62,7 @@ function startMovement() {
         if(speed <= baseSpeed){
             speed = baseSpeed;
         }
-    }, 5);
+    }, 10);
 }
 
 function startTurning(direction) {
@@ -106,7 +106,7 @@ function displaySpeed() {
         }
 
         const speedFluctuation = Math.random() * 2 * a - a;
-        const speedFluctuation2 = 3;
+        const speedFluctuation2 = 1.5;
 
         let displayedSpeed = roundToOneDecimalPlace(40 + speedFluctuation2 * (speed - baseSpeed) + speedFluctuation);
 
@@ -189,10 +189,10 @@ function getNearbyArrows(arrow) {
 
 
 //Enemy functions
-let enemyBaseSpeed = 1.0;
+let enemyBaseSpeed = 2.0;
 
-let turningRate = 0.5;
-let turningRateTowardsPlayer = 1; // Degrees to turn per interval
+let turningRate = 1.0;
+let turningRateTowardsPlayer = 2.0; // Degrees to turn per interval
 const turningThreshold = 30; 
 
 let spawnInterval = 1000; // Spawn new arrows every 5 seconds
@@ -201,6 +201,9 @@ const spawnDistance = 200; //How many px away from another red arrow a div must 
 const baseSpawnLimit = 4;
 let spawnLimit = baseSpawnLimit;
 let absoluteSpawnLimit = calculateAbsoluteSpawnLimit();
+
+let difficulty = 0;
+let difficultyScaler = 0.0001;
 
 // Initial speed for each arrow
 // Flag to track if speed increase is active
@@ -282,6 +285,13 @@ function doEnemyMovement() {
             // Add each arrow to the grid based on its position
             addToGrid(arrow);
         });
+
+        //Check hardmode if not active reset difficulty
+        if(!spawnLimitReached){
+            difficulty = 0;
+        }else{
+            difficulty += difficultyScaler;
+        }
 
         obstacles.forEach((arrow) => {
             let posX = parseFloat(arrow.style.left);
@@ -366,7 +376,7 @@ function doEnemyMovement() {
 
                     if (!speedIncreaseActive && (currentTime - lastSpeedBoostTime >= cooldownDuration)) {
                         // Generate random speed increase and duration
-                        speedIncreaseAmount = Math.random() * (2 - 0) + 0; // Random speed increase between 1 and 5
+                        speedIncreaseAmount = Math.random() * (2*difficulty - difficulty) + difficulty; // Random speed increase between 1 and 5
                         speedIncreaseDuration = Math.floor(Math.random() * (5000 - 1000)) + 1000; // Random duration between 1s (1000 ms) and 5s (5000 ms)
                         speedIncreaseActive = true;
                         speed += speedIncreaseAmount * speedMultiplier; // Increase speed
@@ -405,7 +415,7 @@ function doEnemyMovement() {
             checkCollisions();
             checkPlayerCollision();
         });
-    }, 5); // Update interval set to 5ms for smooth movement
+    }, 10); // Update interval set to 5ms for smooth movement
 }
 
 
@@ -792,9 +802,6 @@ gameArea.addEventListener('contextmenu', (event) => {
 let gameBegin = false;
 
 window.onload = () => {
-
-
-
     getRandomPositionAndAngle();
     startMovement();
     displaySpeed();
