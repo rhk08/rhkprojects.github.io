@@ -275,7 +275,7 @@ function increaseSpawnLimit() {
                 }
             }
         }
-    }, 10000);  // Increase spawn limit every second
+    }, 8000);  // Increase spawn limit every second
 }
 
 // Recalculate absolute spawn limit on window resize and current spawn limit
@@ -766,6 +766,7 @@ function triggerShakeAnimation2() {
 
 
 function changeMode() {
+    clearTimeout(endlessModeTip);
     if(!isDead) {
         isInvincible = !isInvincible;
         checkMode();
@@ -983,7 +984,17 @@ function startGame() {
     spawnArrow();
     increaseSpawnLimit();
 
+    endlessModeTip = setTimeout(() => {
+        displayTip({
+            newTip: "Bored of endless mode? Try clicking the top left button!",
+            buttonInnerText: 'Got it!',
+            displayTime: 10000,
+            buttonColor: '#4cb94e'
+        })
+    }, 30000);
 }
+
+let endlessModeTip
 
 function closeTipAndStartGame(button) {
     closeTip(button); // Close the tip as usual
