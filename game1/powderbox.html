@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Under Construction</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/fontsheet.css">
+</head>
+<body>
+    <audio id="playerDeathSound" src="sounds/undertale-damage-taken.mp3" preload="auto"></audio>
+    <audio id="enemyDeathSound" src="sounds/undertale-damage-taken-altered.mp3" preload="auto"></audio>
+
+    <div id="modeChange" class="hidden" onclick="changeMode()"></div>
+
+    <div id="tipContainer" class="tip-container">
+        <!-- Tips will be dynamically inserted here -->
+    </div>
+
+    <div id="message_box0">
+        <div id="wrap">
+            <h1>Page is under</h1>
+            <h1 style="margin-top: -10px;">Construction.</h1>
+            <div id="flavourWrapper">
+                <h4 id="flavourText">Enjoy this game while you wait</h4>
+            </div>
+            <h4 id="speedDisplay" style="font-size: 20px; padding-top: 7px;">40.0 km/h</h4>
+            <h4 id="scoreDisplay" style="font-size: 20px; padding-top: 2px;">Score 0</h4>
+        </div>
+    </div>
+    <div id="gameArea">
+        <div id="arrow"></div>
+    </div>
+    <script src="javascripts/player.js" defer></script>
+</body>
+</html>
