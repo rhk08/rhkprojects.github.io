@@ -23,29 +23,20 @@ body {
 
 .scene {
     border: 1px solid #ffffff;
-    width: 200px;
-    height: 200px;
+    width: 100%;
+    height: 100%;
     position: relative;
     transform-style: preserve-3d;
     transform: rotateX(0deg) rotateY(0deg); /* Initial rotation */
-    transition: transform 0.1s ease-out;
     perspective: 500px;
 }
 
 .cube {
-    width: 200px;
-    height: 200px;
+    width: 100%;
+    height: 100%;
     position: absolute;
     transform-style: preserve-3d;
     transition: transform 0.1s ease-out;
-
-}
-
-.small-cube {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    transform-style: preserve-3d; /* Preserve 3D space for cube faces */
 }
 
 .face {
@@ -58,8 +49,6 @@ body {
     user-select: none; /* Hide the back faces when rotated */
     border-radius: 5px;
 }
-
-/* Front face */
 .face.front {
     transform: translateZ(100px);
 }
@@ -77,4 +66,33 @@ body {
 }
 .face.bottom {
     transform: rotateX(-90deg) translateZ(100px);
+}
+
+.small-cube {
+    width: 50px;
+    height: 50px;
+    transform: translateZ(-25px);
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    transform-style: preserve-3d;
+}
+
+.small-cube .face.front {
+    transform: translateZ(25px);
+}
+.small-cube .face.back {
+    transform: rotateY(180deg) translateZ(25px);
+}
+.small-cube .face.right {
+    transform: rotateY(90deg) translateZ(25px);
+}
+.small-cube .face.left {
+    transform: rotateY(-90deg) translateZ(25px);
+}
+.small-cube .face.top {
+    transform: rotateX(90deg) translateZ(25px);
+}
+.small-cube .face.bottom {
+    transform: rotateX(-90deg) translateZ(25px);
 }
