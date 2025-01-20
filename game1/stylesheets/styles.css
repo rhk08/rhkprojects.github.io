@@ -73,8 +73,8 @@ body {
     height: 50px;
     transform: translateZ(-25px);
     position: absolute;
-    top: 0%;
-    left: 0%;
+    top: 25%;
+    left: 25%;
     transform-style: preserve-3d;
 }
 
