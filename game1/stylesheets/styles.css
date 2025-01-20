@@ -16,7 +16,7 @@ body {
     height: 200px;
     cursor: grab;
     transform: translate(-50%, -50%);
-    top: 50%;
+    top: 30%;
     left: 50%;
     border: 1px solid #ffffff;
 }
