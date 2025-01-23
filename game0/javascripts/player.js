@@ -6,6 +6,8 @@ const enemyDeathSound = document.getElementById('enemyDeathSound');
 
 const flavourText = document.getElementById('flavourText');
 
+const globalSoundMultiplier = 0.6;
+
 let angle;
 let posX;
 let posY;
@@ -604,7 +606,7 @@ function checkCollisions() {
     if (arrowsToDestroy.size > 0) {
         triggerShakeAnimation2();
         enemyDeathSound.currentTime = 0;
-        enemyDeathSound.volume = 0.3; // Reset the sound to start
+        enemyDeathSound.volume = 0.3 * globalSoundMultiplier; // Reset the sound to start
         enemyDeathSound.play();
     }
     arrowsToDestroy.forEach((arrow) => {
@@ -667,7 +669,7 @@ function checkPlayerCollision() {
         if (calculatedVolume > 0.5) {
             calculatedVolume = 0.5;
         }
-        enemyDeathSound.volume = calculatedVolume;
+        enemyDeathSound.volume = calculatedVolume * globalSoundMultiplier;
         enemyDeathSound.play();
     }
     arrowsDestroyedByPlayer.forEach((arrow) => {
@@ -684,7 +686,7 @@ function checkPlayerCollision() {
 
 function playerDeath() {
     playerDeathSound.currentTime = 0;
-    playerDeathSound.volume = 0.4; // Reset the sound to start
+    playerDeathSound.volume = 0.4 * globalSoundMultiplier; // Reset the sound to start
     playerDeathSound.play();
 
     player.remove();
@@ -817,7 +819,7 @@ function checkMode(){
 
             if(visibleArrows.length > 0){
                 playerDeathSound.currentTime = 0.2;
-                playerDeathSound.volume = 0.5;
+                playerDeathSound.volume = 0.5 * globalSoundMultiplier;
                 playerDeathSound.play();
                 triggerShakeAnimation1()
 
@@ -855,7 +857,7 @@ function checkMode(){
             
             if(visibleArrows.length > 0){
                 playerDeathSound.currentTime = 0.2;
-                playerDeathSound.volume = 0.5;
+                playerDeathSound.volume = 0.5 * globalSoundMultiplier;
                 playerDeathSound.play();
                 triggerShakeAnimation1()
 
@@ -866,7 +868,7 @@ function checkMode(){
         }
     }
 }
- // Assuming this is your existing boolean for turning
+
 let isLeftButtonDown = false; // Track the state of the left button
 let isRightButtonDown = false;
 let stopTimeout;  // Track the state of the right button
@@ -1014,7 +1016,7 @@ function closeTip(button) {
     tipElement.classList.remove('show'); // Hide the tip
     setTimeout(() => {
         tipElement.remove(); // Remove the tip element after hiding
-    }, 300); // Match with CSS transition duration
+    }, 300);
 }
 
 function displayTip(
@@ -1053,7 +1055,6 @@ function displayTip(
         tipElement.classList.add('show');
     }, 10); // A slight delay for the CSS transition
 
-    // Optional: Automatically hide the tip after a certain time
     setTimeout(() => {
         closeTip(closeTipBtn); // Automatically close the tip
     }, displayTime); // Adjust the time as needed (e.g., 5000 ms = 5 seconds)
