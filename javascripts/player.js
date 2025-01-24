@@ -964,15 +964,18 @@ document.addEventListener('keyup', (event) => {
     }, 5); // 100ms delay
 });
 
+let x = 0;
 document.addEventListener('keydown', (event) => {
     if (event.key === ' ' || event.key === 'Space') {
-        speedDecreaseRate = 0.12;
+        speedDecreaseRate = 0.04*Math.pow(2, 0.05 * x);
+        x += 1
     } 
 });
 
 document.addEventListener('keyup', (event) => {
     if (event.key === ' ' || event.key === 'Space') {
         speedDecreaseRate = baseSpeedDecreaseRate;
+        x = 0;
     }
 });
 
