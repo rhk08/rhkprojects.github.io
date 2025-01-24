@@ -967,7 +967,7 @@ document.addEventListener('keyup', (event) => {
 let x = 0;
 document.addEventListener('keydown', (event) => {
     if (event.key === ' ' || event.key === 'Space') {
-        speedDecreaseRate = 0.04*Math.pow(2, 0.05 * x);
+        speedDecreaseRate = 0.08*Math.pow(1.05, x);
         x += 1
     } 
 });
