@@ -6,7 +6,7 @@ const enemyDeathSound = document.getElementById('enemyDeathSound');
 
 const flavourText = document.getElementById('flavourText');
 
-const globalSoundMultiplier = 0.6;
+const globalSoundMultiplier = 0.4;
 
 let angle;
 let posX;
@@ -14,10 +14,12 @@ let posY;
 let speed = 3.0;
 const baseSpeed = 3.0;
 const speedIncreaseRate = 0.012;
-const speedDecreaseRate = 0.04;
+const baseSpeedDecreaseRate = 0.04;
+let speedDecreaseRate = baseSpeedDecreaseRate;
 
 let interval;
 let rotationInterval;
+let slowDownInterval;
 let isTurning = false;
 let turnSpeed = 1;
 const maxTurnSpeed = 20; 
@@ -43,6 +45,24 @@ function getRandomPositionAndAngle() {
     player.style.transform = `rotate(${angle}deg)`;
 }
 
+let isSlowingDown = false;
+const slowSpeed = 1;
+
+function slowDown() {
+    if (!isSlowingDown) return;
+    isSlowingDown = true;
+
+    slowDownInterval = setInterval(() => {
+        speed -= slowSpeed;
+        console.log("slowing down");
+    }, 5);
+}
+
+function stopSlowingDown() {
+    clearInterval(slowDownInterval);
+    isSlowingDown = false;
+}
+
 function startMovement() {
     interval = setInterval(() => {
         posX += speed * Math.cos(angle * (Math.PI / 180));
@@ -65,8 +85,6 @@ function startMovement() {
         }
     }, 10);
 }
-
-
 
 function startTurning(direction) {
     if (isTurning) return;
@@ -946,6 +964,20 @@ document.addEventListener('keyup', (event) => {
     }, 5); // 100ms delay
 });
 
+document.addEventListener('keydown', (event) => {
+    if (event.key === ' ' || event.key === 'Space') {
+        speedDecreaseRate = 0.12;
+    } 
+});
+
+document.addEventListener('keyup', (event) => {
+    if (event.key === ' ' || event.key === 'Space') {
+        speedDecreaseRate = baseSpeedDecreaseRate;
+    }
+});
+
+
+
 
 gameArea.addEventListener('contextmenu', (event) => {
     event.preventDefault();
@@ -968,8 +1000,7 @@ window.onload = () => {
             buttonColor: '#4cb94e',  // Optional: style the button
             onClickFunction: closeTipAndStartGame, // Trigger game start when closed
             displayTime: 14500 // Tip will still automatically disappear if not closed manually
-        });
-    
+        });    
         // Start the game after 10 seconds
         gameStartTimeout = setTimeout(() => {
             startGame();
@@ -988,12 +1019,21 @@ function startGame() {
 
     endlessModeTip = setTimeout(() => {
         displayTip({
+            newTip: "Tip: You can also press Space to slow down!",
+            buttonInnerText: 'Got it!',
+            displayTime: 10000,
+            buttonColor: '#4cb94e'
+        })
+    }, 1000);
+
+    endlessModeTip = setTimeout(() => {
+        displayTip({
             newTip: "Bored of endless mode? Try clicking the top left button!",
             buttonInnerText: 'Got it!',
             displayTime: 10000,
             buttonColor: '#4cb94e'
         })
-    }, 30000);
+    }, 29000);
 }
 
 let endlessModeTip
