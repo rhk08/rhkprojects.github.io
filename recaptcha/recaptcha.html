@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recaptcha</title>
     <link rel="stylesheet" href="./recaptcha.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
 </head>
 <body>
     <div class="recaptcha-page-body">
@@ -27,8 +31,9 @@
         <div class="recaptcha-verify-window" id="recaptcha-verify-window">
             <div class="verify-container">
                 <header class="verify-header">
-                    <span class="verify-header-text-medium">Select all images with</span>
-                    <span class="verify-header-text-big" id="verify-header-text-big">stairs</span>
+                    <span class="verify-header-text-medium">Select all squares with</span>
+                    <span class="verify-header-text-big" id="verify-header-text-big"></span>
+                    <span class="verify-header-text-small faded">Click verify once there are none left.</span>
                 </header>
                 <main class="verify-main">
                     <div class="recaptcha-image-container" id="image-container">

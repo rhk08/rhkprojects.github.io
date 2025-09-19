@@ -159,8 +159,9 @@ function fadeOutAndSplit(section) {
     }
     
     section.classList.add('fading');
-    section.style.transition = 'opacity 0.4s';
+    section.style.transition = 'opacity 0.4s ease, transform 0.4s ease-out';
     section.style.opacity = '0';
+    section.style.transform = 'scale(0.95)';
     
     setTimeout(() => {
         splitSection(section);
