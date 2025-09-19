@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recaptcha</title>
+    <link rel="stylesheet" href="./recaptcha.css">
+</head>
+<body>
+    <div class="recaptcha-page-body">
+        <div class="recaptcha-checkbox-window" id="recaptcha-checkbox-window">
+            <div class="checkbox-container">
+                <img src="media/gifs/captcha_spinner.gif" class="spinner" alt="" id="spinner">
+                <button type="button" id="checkbox" class="checkbox"></button>
+            </div>
+            <div class="checkbox-text">
+                I'm not a robot
+            </div>
+            <div class="logo">
+                <img src="https://forum.nox.tv/core/index.php?media/9-recaptcha-png/"/>
+                <p>reCAPTCHA</p>
+                <small>Privacy - Terms</small>
+            </div>
+        </div>
+        
+
+        <div class="recaptcha-verify-window" id="recaptcha-verify-window">
+            <div class="verify-container">
+                <header class="verify-header">
+                    <span class="verify-header-text-medium">Select all images with</span>
+                    <span class="verify-header-text-big" id="verify-header-text-big">stairs</span>
+                </header>
+                <main class="verify-main">
+                    <div class="recaptcha-image-container" id="image-container">
+
+                    </div>
+                </main>
+            </div>
+            <footer class="verify-container verify-footer">
+                <div class="verify-footer-left">
+                    Press the verify button to proceed.
+                </div>
+
+                <button type="button" class="verify-button" id="verify-button">Verify</button>
+            </footer>
+        </div>
+    </div>
+
+    
+
+    
+
+    <script defer src="recaptcha.js"></script>
+</body>
+</html>
