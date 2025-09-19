@@ -221,8 +221,13 @@ body {
 }
 
 .verify-button:hover{
-    opacity: 0.9;
+    opacity: 0.85;
 }
+
+.verify-button:active{
+    opacity: 1;
+}
+
 
 .verify-footer-left {
     padding: 5px;
