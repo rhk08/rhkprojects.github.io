@@ -159,12 +159,12 @@ function fadeOutAndSplit(section) {
     }
     
     section.classList.add('fading');
-    section.style.transition = 'opacity 0.6s';
+    section.style.transition = 'opacity 0.4s';
     section.style.opacity = '0';
     
     setTimeout(() => {
         splitSection(section);
-    }, 650);
+    }, 450);
 }
 
 function splitSection(section) {

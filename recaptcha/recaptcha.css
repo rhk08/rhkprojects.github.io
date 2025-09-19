@@ -172,7 +172,7 @@ body {
     box-sizing: border-box;
     border: 1px solid #ddd;
     cursor: pointer;
-    transition: all 2s ease;
+    transition: all 0.4s ease;
     background-image: url('media/images/Bicycle/Bicycle (1).png');
     opacity: 0;
 }
