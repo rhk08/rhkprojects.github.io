@@ -741,6 +741,11 @@ function playerDeath() {
             buttonColor: '#303030',
             displayTime: 60000
         })
+
+        // Updated max score
+        maxScore = getCookie("maxScore")
+        maxScore = Math.max(finalScore, maxScore)
+        document.cookie = `maxScore=${maxScore}; max-age=10800; path=/; SameSite=Lax`
     }
 
 
@@ -802,10 +807,13 @@ function changeMode() {
 let initialEndlessModeTimer;
 function checkMode(){
     const mode = document.getElementById('modeChange');
+    
+
     if (isInvincible) {
         mode.innerText = `Endless Mode`;
         mode.classList.add('endless');
         mode.classList.remove('survival');
+        document.cookie = "mode=endless; max-age=10800; path=/; SameSite=Lax";
 
         if(gameBegin){
             updateSpawnInterval(300);
@@ -852,6 +860,8 @@ function checkMode(){
         mode.innerText = `Survival Mode`;
         mode.classList.add('survival');
         mode.classList.remove('endless');
+        document.cookie = "mode=survival; max-age=10800; path=/; SameSite=Lax";
+
         updateSpawnInterval(1000);
         score = 0;
         scoreDisplay.innerText = `Score 0`;
@@ -886,6 +896,21 @@ function checkMode(){
         }
     }
 }
+
+//Helpers
+function getCookie(name) {
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) {
+            return decodeURIComponent(c.substring(nameEQ.length, c.length));
+        }
+    }
+    return null;
+}
+
 
 let isLeftButtonDown = false; // Track the state of the left button
 let isRightButtonDown = false;
@@ -988,7 +1013,16 @@ gameArea.addEventListener('contextmenu', (event) => {
 
 let gameBegin = false;
 
+
+
 window.onload = () => {
+
+    // Check 'mode' cookie to determine if the user has played before and ended in survival mode
+    let mode = getCookie("mode");
+    if (mode === "survival") {
+        isInvincible = false
+    }
+
     getRandomPositionAndAngle();
     startMovement();
     displaySpeed();
@@ -996,20 +1030,36 @@ window.onload = () => {
     
     updateRandomTargetPosition();
 
-    setTimeout(() => {
+    let hasPlayed = getCookie("hasPlayed")
+    let startingTipDisplayTime = 5500
+    let initalTipConfirmText = "Begin"
+    if ( hasPlayed === "true") {
+        startingTipDisplayTime = 1000
+        initalTipConfirmText = "Got it!"
+    }
+
+
+    onLoadTimeout = setTimeout(() => {
         displayTip({
             newTip: "Tip: Hold the Left or Right mouse buttons to turn and speed up!",
-            buttonInnerText: 'Begin',
-            buttonColor: '#4cb94e',  // Optional: style the button
+            buttonInnerText: initalTipConfirmText,
+            buttonColor: '#4cb94e',  // Style the button color
             onClickFunction: closeTipAndStartGame, // Trigger game start when closed
-            displayTime: 14500 // Tip will still automatically disappear if not closed manually
+            displayTime: 9500  // Tip will still automatically disappear if not closed manually
         });    
         // Start the game after 10 seconds
         gameStartTimeout = setTimeout(() => {
             startGame();
             showModeChangeButton(); // Start the game if not started already
-        }, 14500); // 10 seconds
-    }, 500); // 1s delay for smooth appearance
+        }, startingTipDisplayTime);
+    }, 500); // 0.5s delay for smooth appearance
+
+    let maxScore = Number(getCookie("maxScore"));
+    if(maxScore >= 20){
+        clearTimeout(onLoadTimeout);
+        startGame()
+        showModeChangeButton();
+    }
 };
 
 let gameStartTimeout; // Variable to store the timeout ID
@@ -1019,12 +1069,12 @@ function startGame() {
     gameBegin = true;
     spawnArrow();
     increaseSpawnLimit();
-
-    endlessModeTip = setTimeout(() => {
+    
+    slowDownTip = setTimeout(() => {
         displayTip({
             newTip: "Tip: You can also press Space to slow down!",
             buttonInnerText: 'Got it!',
-            displayTime: 10000,
+            displayTime: 3000,
             buttonColor: '#4cb94e'
         })
     }, 1000);
@@ -1037,15 +1087,31 @@ function startGame() {
             buttonColor: '#4cb94e'
         })
     }, 29000);
-}
+
+    let mode = getCookie("mode");
+    if (mode === "survival") {
+        clearTimeout(endlessModeTip);
+    }
+
+    let maxScore = Number(getCookie("maxScore"));
+    if (maxScore >= 20) {
+        clearTimeout(slowDownTip);
+        clearTimeout(endlessModeTip);
+    }
+};
 
 let endlessModeTip
 
 function closeTipAndStartGame(button) {
     closeTip(button); // Close the tip as usual
+    if (gameBegin === true) {
+        return
+    }
     startGame();      // Start the game immediately after closing the tip
     clearTimeout(gameStartTimeout);
     showModeChangeButton(); // Clear the timeout if the tip is closed early
+
+    document.cookie = "hasPlayed=true; max-age=10800; path=/; SameSite=Lax";
 }
 
 function showModeChangeButton() {
